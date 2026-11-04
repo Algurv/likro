@@ -499,8 +499,9 @@ async function registerKid() {
 function builtinFor(kidId) {
   const lvl = levelFor(K(kidId));
   const lessons = [], books = {};
+  for (const L of CONTENT) for (const s of L.stories) if (s.theme === "שיעורי בית") lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] });
   for (const s of lvl.stories) {
-    if (s.theme === "שיעורי בית") { if (kidId === "big") lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] }); continue; }
+    if (s.theme === "שיעורי בית") { if (0) lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] }); continue; }
     const m = /^(.+)-\d+$/.exec(s.id), key = m ? m[1] : "short";
     const t = /^(?:ספר|סיפור): (.+?), פרק/.exec(s.theme || "");
     (books[key] = books[key] || { id: "builtin-" + key, kind: "book", title: t ? t[1] : "סיפורים קצרים", createdAt: 0, stories: [] }).stories.push(s);
