@@ -1,0 +1,1241 @@
+<title>לקרוא ולהבין</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Sans+Hebrew:wght@500;700&display=swap">
+<style>
+/* Layout: one-screen kids app on a sunny park path. Single bright look on purpose (a game world), so no dark theme.
+   Top: candy bar. Middle: the page being read. Bottom: the running track with the banana. */
+:root {
+  color-scheme: light;
+  --sky: #dff1ff;
+  --grass: #7cc36b;
+  --path: #e9d3a6;
+  --paper: #fffdf7;
+  --ink: #23324a;
+  --soft: #6b7a92;
+  --faded: #a9b4c5;
+  --candy: #ff5c8a;
+  --sun: #ffc93c;
+  --good: #2e9e5b;
+  --bad: #e2513c;
+  --btn: #2f6fe4;
+  --btn-ink: #ffffff;
+  --line: #d7e3f1;
+  --font-ui: "Varela Round", "Arial Rounded MT Bold", Arial, sans-serif;
+  --font-read: "Noto Sans Hebrew", "Arial Hebrew", Arial, sans-serif;
+}
+html, body { height: 100%; }
+body { background: var(--sky); color: var(--ink); font-family: var(--font-ui); font-size: 18px; margin: 0; }
+button { font-family: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--btn); outline-offset: 2px; }
+.app { direction: rtl; height: 100%; display: flex; flex-direction: column; max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px; box-sizing: border-box; gap: 12px; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+h1, h2 { margin: 0; font-weight: 400; text-wrap: balance; }
+h1 { font-size: clamp(30px, 6vw, 44px); }
+h2 { font-size: 26px; }
+.muted { color: var(--soft); }
+.big-btn { background: var(--btn); color: var(--btn-ink); border: 0; border-radius: 18px; padding: 14px 26px; font-size: 22px; box-shadow: 0 4px 0 #1c4fae; }
+.big-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #1c4fae; }
+.link-btn { background: none; border: 0; color: var(--soft); font-size: 16px; text-decoration: underline; padding: 6px; }
+.topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.topbar .spacer { flex: 1; }
+.icon-btn { background: var(--paper); border: 2px solid var(--line); border-radius: 14px; padding: 8px 14px; font-size: 18px; color: var(--ink); }
+
+/* Home */
+.kids { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.kid-card { background: var(--paper); border: 3px solid var(--line); border-radius: 24px; padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 20px; color: var(--ink); }
+.kid-card:hover { border-color: var(--btn); }
+.kid-card svg { width: 110px; height: 110px; }
+.kid-card .name { font-size: 30px; }
+
+/* Candy bar */
+.candy { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 2px solid var(--line); border-radius: 18px; padding: 6px 12px; flex-wrap: wrap; }
+.slots { display: flex; gap: 3px; direction: rtl; }
+.slot { width: 24px; height: 24px; border-radius: 50%; background: #eef2f8; display: grid; place-items: center; font-size: 17px; }
+.slot.on { background: #ffe3ec; }
+.prizes { display: flex; gap: 8px; align-items: center; font-size: 22px; }
+.prize-count { font-size: 16px; color: var(--soft); }
+.goal { font-size: 14px; color: var(--soft); }
+.pop { position: fixed; font-size: 30px; pointer-events: none; z-index: 20; transition: transform .9s ease-in, opacity .9s ease-in; }
+
+/* Story list */
+.stories { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 8px; }
+.story-btn { background: var(--paper); border: 3px solid var(--line); border-radius: 20px; padding: 14px; text-align: right; display: flex; flex-direction: column; gap: 6px; color: var(--ink); }
+.story-btn .t { font-family: var(--font-read); font-size: 24px; font-weight: 700; }
+.story-btn .s { font-size: 15px; color: var(--soft); }
+.story-btn.done { border-color: var(--good); }
+.story-btn:disabled { opacity: .45; cursor: not-allowed; }
+.gate { background: #fff6d6; border: 2px dashed var(--sun); border-radius: 16px; padding: 10px 14px; }
+
+/* Reading */
+.page { flex: 1; min-height: 0; background: var(--paper); border: 2px solid var(--line); border-radius: 24px; padding: 18px 22px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.sent { font-family: var(--font-read); font-size: clamp(26px, 5vw, 40px); line-height: 2; font-weight: 500; margin: 0; }
+.sent.old { color: var(--faded); font-size: clamp(20px, 3.4vw, 28px); line-height: 1.9; }
+.q { font-family: var(--font-read); font-size: clamp(24px, 4.4vw, 34px); line-height: 1.9; font-weight: 700; margin: 0; color: var(--btn); }
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .opts { grid-template-columns: 1fr; } }
+.opt { font-family: var(--font-read); font-size: clamp(22px, 4vw, 30px); line-height: 1.8; background: var(--paper); border: 3px solid var(--line); border-radius: 18px; padding: 8px 14px; color: var(--ink); min-height: 64px; }
+.opt:hover:not(:disabled) { border-color: var(--btn); }
+.opt.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; opacity: .6; }
+.opt.right { border-color: var(--good); background: #e4f6ea; color: var(--good); }
+.actions { display: flex; justify-content: center; }
+
+/* Track */
+.track { position: relative; height: clamp(130px, min(28vh, 34vw), 240px); flex: none; border-radius: 20px; overflow: hidden; background: linear-gradient(var(--sky) 0 55%, var(--grass) 55% 100%); }
+.track svg { width: 100%; height: 100%; transform: scaleX(-1); display: block; overflow: visible; }
+.track .cloud { animation: drift 28s linear infinite alternate; }
+.track .c2 { animation-duration: 40s; }
+@keyframes drift { from { transform: translateX(-40px); } to { transform: translateX(60px); } }
+.track .star { animation: twinkle .6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes twinkle { from { transform: scale(.7) rotate(0); } to { transform: scale(1.2) rotate(30deg); } }
+/* living scene: sun rays turn, trees and flowers sway, birds and a butterfly cross the sky */
+.track .rays { animation: spin 24s linear infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.track .sway { animation: sway 3.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+.track .sway.s2 { animation-duration: 4.2s; animation-delay: -1.3s; }
+.track .sway.s3 { animation-duration: 2.8s; animation-delay: -.6s; }
+@keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+.track .flock { animation: fly 22s linear infinite; }
+.track .flock.f2 { animation-duration: 31s; animation-delay: -12s; }
+@keyframes fly { from { transform: translate(-120px, 0); } 50% { transform: translate(330px, -14px); } to { transform: translate(780px, 4px); } }
+.track .wing { animation: flap .35s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+@keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(-.6); } }
+.track .butterfly { animation: flutter 14s ease-in-out infinite; }
+@keyframes flutter { 0% { transform: translate(0, 0); } 25% { transform: translate(-60px, -22px); } 50% { transform: translate(-110px, 6px); } 75% { transform: translate(-40px, -12px); } 100% { transform: translate(0, 0); } }
+.track .bwing { animation: bflap .18s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 100% 50%; }
+.track .bwing.r { transform-origin: 0% 50%; }
+@keyframes bflap { from { transform: scaleX(1); } to { transform: scaleX(.25); } }
+@media (prefers-reduced-motion: reduce) { .track .cloud, .track .star, .track .rays, .track .sway, .track .flock, .track .wing, .track .butterfly, .track .bwing { animation: none; } }
+.bubble { position: absolute; top: 10px; right: 16px; background: var(--paper); border: 2px solid var(--ink); border-radius: 16px; padding: 2px 14px; font-size: 24px; font-family: var(--font-read); font-weight: 700; }
+.bubble.good { color: var(--good); }
+.bubble.bad { color: var(--bad); }
+
+/* End of story */
+.center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+.huge { font-size: 64px; }
+
+/* Parent */
+.parent { overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 20px; }
+.panel { background: var(--paper); border: 2px solid var(--line); border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.stat { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.stat b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 14px; color: var(--soft); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; min-width: 560px; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tag { display: inline-block; border-radius: 99px; padding: 0 8px; font-size: 13px; border: 1px solid currentColor; }
+.tag.good { color: var(--good); } .tag.bad { color: var(--bad); } .tag.warn { color: #b7791f; }
+input[type=text], input[type=number] { font-family: inherit; font-size: 20px; padding: 6px 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); width: 140px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.danger { color: var(--bad); }
+@media (prefers-reduced-motion: reduce) { .pop { transition: none; } }
+
+/* Kid hub: lessons or books */
+.hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.hub-btn { background: var(--paper); border: 3px solid var(--line); border-radius: 26px; padding: 26px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--ink); font-size: 30px; }
+.hub-btn:hover { border-color: var(--btn); }
+.hub-btn .e { font-size: 72px; line-height: 1; }
+.hub-btn .s { font-size: 17px; color: var(--soft); }
+.badge { display: inline-block; background: var(--candy); color: #fff; border-radius: 99px; padding: 0 10px; font-size: 15px; }
+.book-btn .t { font-size: 26px; }
+
+/* Parent upload */
+.seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg button { background: var(--paper); border: 3px solid var(--line); border-radius: 14px; padding: 8px 16px; font-size: 20px; color: var(--ink); }
+.seg button.on { border-color: var(--btn); background: #e8f0ff; }
+.file-btn { position: relative; overflow: hidden; display: inline-block; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.thumb { width: 84px; position: relative; font-size: 13px; color: var(--soft); text-align: center; }
+.thumb img { width: 84px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+.thumb button { position: absolute; top: 2px; left: 2px; border: 0; border-radius: 99px; background: rgba(0,0,0,.6); color: #fff; width: 26px; height: 26px; font-size: 14px; }
+.bar { height: 14px; background: #eef2f8; border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--btn); transition: width .3s; }
+.log { font-size: 15px; color: var(--soft); margin: 0; padding-inline-start: 18px; }
+textarea.edit { width: 100%; box-sizing: border-box; min-height: 340px; font-family: var(--font-read); font-size: 20px; line-height: 1.8; direction: rtl; padding: 10px; border: 2px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); }
+input.wide { width: 100%; box-sizing: border-box; }
+.help { font-size: 15px; color: var(--soft); margin: 0; }
+.items { display: flex; flex-direction: column; gap: 8px; }
+.item { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
+.item .t { font-family: var(--font-read); font-weight: 700; font-size: 18px; }
+.item .spacer { flex: 1; }
+.sent.re { font-size: clamp(22px, 3.8vw, 30px); line-height: 1.9; }
+.name-in { width: min(420px, 100%) !important; font-size: 34px !important; text-align: center; padding: 10px !important; font-family: var(--font-read) !important; }
+.grades { justify-content: center; }
+.grades button { font-family: var(--font-read); font-size: 22px; min-width: 96px; }
+.note { background: #fff6d6; border: 2px solid var(--sun); border-radius: 14px; padding: 8px 12px; font-size: 16px; }
+.modal { position: fixed; inset: 0; background: rgba(20,30,50,.45); display: grid; place-items: center; z-index: 50; padding: 16px; }
+.modal .box { background: var(--paper); border-radius: 18px; padding: 18px; max-width: 420px; font-size: 20px; display: flex; flex-direction: column; gap: 12px; }
+</style>
+
+<div class="app" id="app" dir="rtl" lang="he"></div>
+
+<script>
+const CONTENT = [{"level": 1, "grade": "א", "niqqud": "full", "for": "בן 6", "shuffle_options": true, "stories": [{"id": "car-red", "title": "מְכוֹנִית אֲדֻמָּה", "theme": "מכוניות", "steps": [{"text": "לְגִיל יֵשׁ מְכוֹנִית."}, {"question": "מָה יֵשׁ לְגִיל?", "options": ["כַּדּוּר", "מְכוֹנִית", "אוֹפַנַּיִם", "כֶּלֶב"], "answer": 1}, {"text": "הַמְּכוֹנִית אֲדֻמָּה."}, {"question": "אֵיזֶה צֶבַע הַמְּכוֹנִית?", "options": ["כְּחֻלָּה", "יְרֻקָּה", "אֲדֻמָּה", "צְהֻבָּה"], "answer": 2}, {"text": "הַמְּכוֹנִית נוֹסַעַת מַהֵר."}, {"question": "אֵיךְ נוֹסַעַת הַמְּכוֹנִית?", "options": ["לְאַט", "מַהֵר", "אָחוֹרָה", "הִיא לֹא נוֹסַעַת"], "answer": 1}, {"text": "הִיא עָפָה בָּאֲוִיר!"}, {"question": "מָה עוֹשָׂה הַמְּכוֹנִית?", "options": ["יְשֵׁנָה", "אוֹכֶלֶת", "עָפָה", "שׁוֹתָה"], "answer": 2}, {"text": "בּוּם! הִיא נוֹחֶתֶת עַל הַשָּׁטִיחַ."}, {"question": "אֵיפֹה הַמְּכוֹנִית עַכְשָׁו?", "options": ["עַל הַשָּׁטִיחַ", "עַל הַמִּטָּה", "בַּמִּטְבָּח", "בַּגִּנָּה"], "answer": 0}]}, {"id": "mc-house", "title": "הַבַּיִת שֶׁל סְטִיב", "theme": "מיינקראפט", "steps": [{"text": "סְטִיב בּוֹנֶה בַּיִת."}, {"question": "מָה סְטִיב בּוֹנֶה?", "options": ["עֵץ", "בַּיִת", "מְכוֹנִית", "גֶּשֶׁר"], "answer": 1}, {"text": "הַבַּיִת מֵעֵץ."}, {"question": "מִמָּה הַבַּיִת?", "options": ["מֵאֶבֶן", "מִקֶּרַח", "מֵעֵץ", "מֵחוֹל"], "answer": 2}, {"text": "בַּלַּיְלָה בָּא זוֹמְבִּי."}, {"question": "מִי בָּא בַּלַּיְלָה?", "options": ["חֲזִיר", "זוֹמְבִּי", "אַבָּא", "חָתוּל"], "answer": 1}, {"text": "סְטִיב סוֹגֵר אֶת הַדֶּלֶת."}, {"question": "מָה סְטִיב עוֹשֶׂה?", "options": ["פּוֹתֵחַ אֶת הַדֶּלֶת", "סוֹגֵר אֶת הַדֶּלֶת", "בּוֹרֵחַ", "יָשֵׁן"], "answer": 1}, {"text": "הַזּוֹמְבִּי לֹא נִכְנָס."}, {"question": "אֵיפֹה הַזּוֹמְבִּי?", "options": ["בְּתוֹךְ הַבַּיִת", "בַּחוּץ", "בַּמִּטָּה", "עַל הַגַּג"], "answer": 1}]}, {"id": "chess", "title": "שַׁחְמָט עִם אַבָּא", "theme": "שחמט", "steps": [{"text": "אַבָּא וְגִיל מְשַׂחֲקִים שַׁחְמָט."}, {"question": "בְּמָה הֵם מְשַׂחֲקִים?", "options": ["כַּדּוּר", "שַׁחְמָט", "קְלָפִים", "מְכוֹנִיּוֹת"], "answer": 1}, {"text": "לְגִיל יֵשׁ כֵּלִים לְבָנִים."}, {"question": "אֵיזֶה צֶבַע הַכֵּלִים שֶׁל גִּיל?", "options": ["שְׁחֹרִים", "לְבָנִים", "אֲדֻמִּים", "כְּחֻלִּים"], "answer": 1}, {"text": "הַסּוּס שֶׁל גִּיל קוֹפֵץ."}, {"question": "אֵיזֶה כְּלִי קוֹפֵץ?", "options": ["הַמֶּלֶךְ", "הַצְּרִיחַ", "הַסּוּס", "הַמַּלְכָּה"], "answer": 2}, {"text": "אַבָּא חוֹשֵׁב וְחוֹשֵׁב."}, {"question": "מָה אַבָּא עוֹשֶׂה?", "options": ["צוֹחֵק", "חוֹשֵׁב", "יָשֵׁן", "אוֹכֵל"], "answer": 1}, {"text": "גִּיל צוֹעֵק: שַׁח מָט!"}, {"question": "מִי נִצֵּחַ?", "options": ["אַבָּא", "גִּיל", "אַף אֶחָד", "הַסּוּס"], "answer": 1}]}, {"id": "bike-puddle", "title": "רוֹן וְהַשְּׁלוּלִית", "theme": "אופניים", "steps": [{"text": "רוֹן רוֹכֵב עַל אוֹפַנַּיִם."}, {"question": "עַל מָה רוֹן רוֹכֵב?", "options": ["סוּס", "אוֹפַנַּיִם", "קוֹרְקִינֶט", "אוֹטוֹבּוּס"], "answer": 1}, {"text": "הָאוֹפַנַּיִם כְּחֻלִּים."}, {"question": "אֵיזֶה צֶבַע הָאוֹפַנַּיִם?", "options": ["אֲדֻמִּים", "צְהֻבִּים", "כְּחֻלִּים", "יְרֻקִּים"], "answer": 2}, {"text": "רוֹן נוֹסֵעַ בִּירִידָה."}, {"question": "לְאָן רוֹן נוֹסֵעַ?", "options": ["לְמַעְלָה", "לְמַטָּה", "הַבַּיְתָה", "לַיָּם"], "answer": 1}, {"text": "פִּתְאוֹם יֵשׁ שְׁלוּלִית!"}, {"question": "מָה יֵשׁ בַּדֶּרֶךְ?", "options": ["שְׁלוּלִית", "כֶּלֶב", "עֵץ", "בָּנָנָה"], "answer": 0}, {"text": "שְׁפְּלָאשׁ! רוֹן רָטוֹב."}, {"question": "אֵיךְ רוֹן עַכְשָׁו?", "options": ["יָבֵשׁ", "רָטוֹב", "עָצוּב", "יָשֵׁן"], "answer": 1}]}, {"id": "ball-tree", "title": "הַכַּדּוּר עַל הָעֵץ", "theme": "כדור עם חברים", "steps": [{"text": "הַחֲבֵרִים מְשַׂחֲקִים בַּחוּץ."}, {"question": "אֵיפֹה הֵם מְשַׂחֲקִים?", "options": ["בַּבַּיִת", "בַּחוּץ", "בַּכִּתָּה", "בַּמִּטְבָּח"], "answer": 1}, {"text": "גַּל בּוֹעֵט בַּכַּדּוּר."}, {"question": "מָה גַּל עוֹשֶׂה?", "options": ["זוֹרֵק", "בּוֹעֵט", "יָשֵׁן", "אוֹכֵל"], "answer": 1}, {"text": "הַכַּדּוּר עָף גָּבוֹהַּ."}, {"question": "לְאָן הַכַּדּוּר עָף?", "options": ["לְמַעְלָה", "לְמַטָּה", "לַיָּם", "הַבַּיְתָה"], "answer": 0}, {"text": "הוּא נוֹפֵל עַל עֵץ."}, {"question": "אֵיפֹה הַכַּדּוּר?", "options": ["עַל הַגַּג", "עַל הָעֵץ", "בַּמְּכוֹנִית", "בַּשְּׁלוּלִית"], "answer": 1}, {"text": "חָתוּל מַפִּיל אוֹתוֹ לְמַטָּה."}, {"question": "מִי עָזַר לַחֲבֵרִים?", "options": ["כֶּלֶב", "צִפּוֹר", "חָתוּל", "אַבָּא"], "answer": 2}]}, {"id": "banana", "title": "הַבָּנָנָה שֶׁל אַבָּא", "theme": "מצחיק", "steps": [{"text": "עַל הָרִצְפָּה יֵשׁ בָּנָנָה."}, {"question": "מָה יֵשׁ עַל הָרִצְפָּה?", "options": ["תַּפּוּחַ", "בָּנָנָה", "כַּדּוּר", "נַעַל"], "answer": 1}, {"text": "אַבָּא לֹא רוֹאֶה אוֹתָהּ."}, {"question": "מָה אַבָּא לֹא רוֹאֶה?", "options": ["אֶת גִּיל", "אֶת הַבָּנָנָה", "אֶת הַכֶּלֶב", "אֶת הַדֶּלֶת"], "answer": 1}, {"text": "אוּפְּס! אַבָּא מַחְלִיק."}, {"question": "מָה קוֹרֶה לְאַבָּא?", "options": ["קוֹפֵץ", "מַחְלִיק", "רָץ", "שָׁר"], "answer": 1}, {"text": "גִּיל צוֹחֵק."}, {"question": "מָה גִּיל עוֹשֶׂה?", "options": ["בּוֹכֶה", "יָשֵׁן", "צוֹחֵק", "צוֹעֵק"], "answer": 2}, {"text": "גַּם אַבָּא צוֹחֵק."}, {"question": "מִי צוֹחֵק עַכְשָׁו?", "options": ["רַק גִּיל", "רַק אַבָּא", "גִּיל וְאַבָּא", "אַף אֶחָד"], "answer": 2}]}, {"id": "race", "title": "הַמֵּרוֹץ", "theme": "מכוניות", "steps": [{"text": "יֵשׁ שְׁתֵּי מְכוֹנִיּוֹת בַּמֵּרוֹץ."}, {"question": "כַּמָּה מְכוֹנִיּוֹת יֵשׁ?", "options": ["אַחַת", "שְׁתַּיִם", "שָׁלוֹשׁ", "אַרְבַּע"], "answer": 1}, {"text": "הַמְּכוֹנִית הַצְּהֻבָּה מְהִירָה."}, {"question": "אֵיזוֹ מְכוֹנִית מְהִירָה?", "options": ["הָאֲדֻמָּה", "הַיְּרֻקָּה", "הַצְּהֻבָּה", "הַכְּחֻלָּה"], "answer": 2}, {"text": "הַמְּכוֹנִית הַיְּרֻקָּה אִטִּית."}, {"question": "אֵיזוֹ מְכוֹנִית אִטִּית?", "options": ["הַצְּהֻבָּה", "הַיְּרֻקָּה", "הָאֲדֻמָּה", "הַשְּׁחֹרָה"], "answer": 1}, {"text": "הַצְּהֻבָּה מַגִּיעָה רִאשׁוֹנָה."}, {"question": "מִי נִצְּחָה?", "options": ["הַיְּרֻקָּה", "הַצְּהֻבָּה", "שְׁתֵּיהֶן", "אַף אַחַת"], "answer": 1}, {"text": "הַיְּרֻקָּה עוֹד בַּדֶּרֶךְ..."}, {"question": "מָה עִם הַיְּרֻקָּה?", "options": ["הִיא נִצְּחָה", "הִיא עוֹד לֹא הִגִּיעָה", "הִיא עָפָה", "הִיא יְשֵׁנָה"], "answer": 1}]}, {"id": "mc-pig", "title": "חָבֵר חָדָשׁ", "theme": "מיינקראפט", "steps": [{"text": "סְטִיב רוֹאֶה חֲזִיר."}, {"question": "מָה סְטִיב רוֹאֶה?", "options": ["פָּרָה", "חֲזִיר", "תַּרְנְגֹלֶת", "זוֹמְבִּי"], "answer": 1}, {"text": "הַחֲזִיר וָרֹד."}, {"question": "אֵיזֶה צֶבַע הַחֲזִיר?", "options": ["חוּם", "לָבָן", "וָרֹד", "שָׁחֹר"], "answer": 2}, {"text": "סְטִיב נוֹתֵן לוֹ גֶּזֶר."}, {"question": "מָה סְטִיב נוֹתֵן לַחֲזִיר?", "options": ["לֶחֶם", "גֶּזֶר", "בָּנָנָה", "עוּגָה"], "answer": 1}, {"text": "הַחֲזִיר הוֹלֵךְ אַחֲרֵי סְטִיב."}, {"question": "מִי הוֹלֵךְ אַחֲרֵי סְטִיב?", "options": ["זוֹמְבִּי", "חֲזִיר", "תַּרְנְגֹלֶת", "פָּרָה"], "answer": 1}, {"text": "עַכְשָׁו יֵשׁ לִסְטִיב חָבֵר."}, {"question": "מִי הֶחָבֵר שֶׁל סְטִיב?", "options": ["הַחֲזִיר", "הַזּוֹמְבִּי", "הַפָּרָה", "גִּיל"], "answer": 0}]}]}, {"level": 2, "grade": "ב-ג", "niqqud": "full", "for": "בן 8", "shuffle_options": true, "stories": [{"id": "hw-sigd~0", "title": "חַג הַסִּיגְד", "theme": "שיעורי בית", "steps": [{"text": "לִפְנֵי אַלְפֵי שָׁנִים נֶחְלְקָה מַלְכוּת יִשְׂרָאֵל לִשְׁנַיִם - מַלְכוּת יְהוּדָה וּמַלְכוּת יִשְׂרָאֵל."}, {"text": "קְבוּצַת יְהוּדִים מִשֵּׁבֶט דָּן, הֶחְלִיטוּ לִבְרֹחַ דָּרוֹמָה מִכָּל הַמֶּתַח וְהַפִּלּוּג שֶׁשָּׂרְרוּ אָז בָּאָרֶץ,"}, {"text": "עַד שֶׁהִגִּיעוּ לְהָרֵי אַפְרִיקָה, בַּמָּקוֹם הַיָּדוּעַ כַּיּוֹם כִּמְדִינַת אֶתְיוֹפְּיָה."}, {"question": "לְאָן הִגִּיעוּ הַיְּהוּדִים מִשֵּׁבֶט דָּן?", "options": ["לְהָרֵי אַפְרִיקָה, לְאֶתְיוֹפְּיָה", "לִירוּשָׁלַיִם", "לְמִצְרַיִם", "לְאֵירוֹפָּה"], "answer": 0}, {"question": "מִמָּה הֵם בָּרְחוּ?", "options": ["מֵהַמֶּתַח וְהַפִּלּוּג בָּאָרֶץ", "מִמִּלְחָמָה עִם מִצְרַיִם", "מֵרָעָב", "מֵחַיּוֹת פֶּרֶא"], "answer": 0}, {"text": "עֵקֶב הַנִּתּוּק מֵחַיֵּי הַיְּהוּדִים בָּעוֹלָם, הֵם לֹא הִכִּירוּ אֶת הַהִיסְטוֹרְיָה הַיְּהוּדִית."}, {"text": "הֵם גַּם לֹא יָדְעוּ עַל כָּל הִשְׁתַּלְשְׁלוּת הַתּוֹרָה בְּאַלְפֵי הַשָּׁנִים הַלָּלוּ."}, {"text": "הֵם לֹא הִכִּירוּ אֶת חֲנֻכָּה וּפוּרִים."}, {"text": "כָּל מָה שֶׁהָיָה שָׁמוּר בִּידֵיהֶם, הֵם כִּתְבֵי הַקֹּדֶשׁ שֶׁל הַתּוֹרָה וְהַנְּבִיאִים, וּמִנְהָגִים מְאוֹד קְדוּמִים."}, {"question": "לָמָּה הֵם לֹא הִכִּירוּ אֶת הַהִיסְטוֹרְיָה הַיְּהוּדִית?", "options": ["כִּי הֵם הָיוּ מְנֻתָּקִים מִשְּׁאָר הַיְּהוּדִים", "כִּי לֹא הָיוּ לָהֶם סְפָרִים", "כִּי הֵם לֹא רָצוּ לִלְמֹד", "כִּי הֵם שָׁכְחוּ אֶת הַתּוֹרָה"], "answer": 0}, {"question": "אֵיזֶה חַג יְהוּדֵי אֶתְיוֹפְּיָה לֹא הִכִּירוּ?", "options": ["חֲנֻכָּה", "יוֹם הַכִּפּוּרִים", "חַג הַסִּיגְד", "שַׁבָּת"], "answer": 0}, {"text": "כְּדֵי לִשְׁמֹר עַל זֶהוּתָם, הֵם קָרְאוּ לְעַצְמָם בְּשֵׁם: \"בֵּיתָא יִשְׂרָאֵל\" (=בֵּית יִשְׂרָאֵל)."}, {"text": "הֵם הִתְמִידוּ לִלְמֹד אֶת הַתּוֹרָה שֶׁכָּלְלָה אֶת חֲמֵשֶׁת חֻמְשֵׁי תּוֹרָה וְאֶת הַנְּבִיאִים בִּלְבַד."}, {"question": "אֵיךְ קָרְאוּ יְהוּדֵי אֶתְיוֹפְּיָה לְעַצְמָם?", "options": ["בֵּיתָא יִשְׂרָאֵל", "שֵׁבֶט יְהוּדָה", "בְּנֵי אַפְרִיקָה", "מַלְכוּת דָּן"], "answer": 0}, {"text": "בְּכָל שָׁנָה בְּכ\"ט בְּחֹדֶשׁ חֶשְׁוָן (בַּיּוֹם הַחֲמִשִּׁים לְאַחַר יוֹם הַכִּפּוּרִים) מְצַיְּנִים יְהוּדֵי אֶתְיוֹפְּיָה אֶת 'חַג הַסִּיגְד'."}, {"text": "מַשְׁמָעוּת הַשֵּׁם – סִיגְד, מִלְּשׁוֹן סְגִידָה, הִשְׁתַּחֲוָיָה."}, {"question": "מָתַי חוֹגְגִים אֶת חַג הַסִּיגְד?", "options": ["חֲמִשִּׁים יוֹם אַחֲרֵי יוֹם הַכִּפּוּרִים", "בַּחֲנֻכָּה", "בְּיוֹם הָעַצְמָאוּת", "שָׁבוּעַ אַחֲרֵי פֶּסַח"], "answer": 0}, {"question": "מָה פֵּרוּשׁ הַמִּלָּה \"סִיגְד\"?", "options": ["הִשְׁתַּחֲוָיָה", "שִׂמְחָה", "צוֹם", "טִיּוּל"], "answer": 0}, {"text": "בְּמֶשֶׁךְ אַלְפֵי שָׁנִים חָלְמוּ יְהוּדֵי אֶתְיוֹפְּיָה לְהַגִּיעַ לְאֶרֶץ יִשְׂרָאֵל וְלִירוּשָׁלַיִם,"}, {"text": "אֶת גַּעְגּוּעֵיהֶם הֵם בִּטְּאוּ בְּ'חַג הַסִּיגְד' וְצִיְּנוּ זֹאת בְּצוֹם, בִּתְפִלָּה וּבְתַחֲנוּנִים."}, {"question": "עַל מָה חָלְמוּ יְהוּדֵי אֶתְיוֹפְּיָה?", "options": ["לְהַגִּיעַ לִירוּשָׁלַיִם", "לִבְנוֹת עִיר חֲדָשָׁה בְּאַפְרִיקָה", "לִהְיוֹת עֲשִׁירִים", "לִלְמֹד עַל פּוּרִים"], "answer": 0}, {"text": "בְּיוֹם הַסִּיגְד הָיוּ עוֹלִים בְּנֵי הַכְּפָרִים עַל הַר גָּבוֹהַּ,"}, {"text": "כְּדֵי לְהַמְחִישׁ אֶת מַעֲמַד מַתַּן תּוֹרָה בְּהַר סִינַי, וְגַם שֶׁמָּקוֹם גָּבוֹהַּ נֶחְשָׁב לְמָקוֹם טָהוֹר יוֹתֵר כְּשֶׁהָ'אוֹרִית' (הַתּוֹרָה) בִּידֵיהֶם."}, {"question": "לָמָּה עָלוּ בְּנֵי הַכְּפָרִים עַל הַר גָּבוֹהַּ?", "options": ["כְּדֵי לְהִזָּכֵר בְּמַתַּן תּוֹרָה בְּהַר סִינַי", "כְּדֵי לִרְאוֹת אֶת הַיָּם", "כְּדֵי לִבְרֹחַ מֵאוֹיְבִים", "כְּדֵי לִמְצֹא מַיִם"], "answer": 0}, {"question": "מָה זֹאת \"אוֹרִית\"?", "options": ["הַתּוֹרָה", "הַר גָּבוֹהַּ", "כֹּהֵן", "תְּפִלָּה"], "answer": 0}, {"text": "עַל פִּסְגַּת הָהָר הָיוּ הַקֶּיְסִים (הַכֹּהֲנִים) קוֹרְאִים בַּתּוֹרָה, מִתְפַּלְּלִים וּמְבַקְּשִׁים לַחֲזֹר לִירוּשָׁלַיִם."}, {"text": "לְאַחַר הַתְּפִלָּה הָיוּ הַקֶּיְסִים מְבָרְכִים אֶת הָאֲנָשִׁים וּמְבַקְּשִׁים מֵהֶם לִשְׁמֹר אֶת מִצְווֹת הַתּוֹרָה."}, {"text": "אֶת הַטֶּקֶס הָיוּ מְסַיְּמִים בִּתְקִיעָה בַּחֲצוֹצְרוֹת וּבִסְעוּדָה גְּדוֹלָה."}, {"question": "מִי הֵם הַקֶּיְסִים?", "options": ["הַכֹּהֲנִים", "הַיְּלָדִים", "הַמְּלָכִים", "הַחַיָּלִים"], "answer": 0}, {"question": "אֵיךְ הִסְתַּיֵּם הַטֶּקֶס?", "options": ["בַּחֲצוֹצְרוֹת וּבִסְעוּדָה גְּדוֹלָה", "בְּשֵׁנָה אֲרֻכָּה", "בְּמִשְׂחַק כַּדּוּר", "בְּשֶׁקֶט גָּמוּר"], "answer": 0}, {"text": "בָּאָרֶץ יְהוּדֵי אֶתְיוֹפְּיָה מְצַיְּנִים אֶת חַג הַסִּיגְד בְּצוֹם, בִּלְבִישַׁת בִּגְדֵי לָבָן וּבִתְפִלּוֹת,"}, {"text": "בַּטַּיֶּלֶת בִּשְׁכוּנַת אַרְמוֹן הַנְּצִיב בִּירוּשָׁלַיִם, שֶׁמִּמֶּנָּה נִתָּן לְהַשְׁקִיף עַל יְרוּשָׁלַיִם כֻּלָּהּ."}, {"text": "מִי שֶׁלֹּא רָאָה סִיגְד מִיָּמָיו, יָבוֹא וִיחַוֶּה שִׂמְחָה מְיֻחֶדֶת בִּירוּשָׁלַיִם."}, {"question": "אֵיפֹה חוֹגְגִים הַיּוֹם אֶת הַסִּיגְד בָּאָרֶץ?", "options": ["בַּטַּיֶּלֶת בִּירוּשָׁלַיִם", "עַל חוֹף הַיָּם בְּתֵל אָבִיב", "בְּהַר סִינַי", "בְּבֵית הַסֵּפֶר"], "answer": 0}, {"question": "אֵיזֶה צֶבַע בְּגָדִים לוֹבְשִׁים בַּחַג?", "options": ["לָבָן", "שָׁחֹר", "אָדֹם", "כָּחֹל"], "answer": 0}, {"question": "מָה הָרַעְיוֹן הָעִקָּרִי שֶׁל הַקֶּטַע?", "options": ["יְהוּדֵי אֶתְיוֹפְּיָה שָׁמְרוּ עַל הַתּוֹרָה וְהִתְגַּעְגְּעוּ לִירוּשָׁלַיִם", "יְהוּדֵי אֶתְיוֹפְּיָה שָׁכְחוּ אֶת הַתּוֹרָה", "חַג הַסִּיגְד הוּא חַג שֶׁל מַתָּנוֹת", "בְּאֶתְיוֹפְּיָה יֵשׁ הָרִים גְּבוֹהִים"], "answer": 0}]}, {"id": "hw-1", "title": "כָּל אֶחָד יָחִיד וּמְיֻחָד", "theme": "שיעורי בית", "start": true, "steps": [{"text": "מִדֵּי יוֹם וּבְמַהֲלַךְ כָּל יְמוֹת הַשָּׁבוּעַ אַתֶּם פּוֹגְשִׁים אֶת חַבְרֵיכֶם לַכִּתָּה."}, {"text": "מָה מְשֻׁתָּף לְכֻלְּכֶם?"}, {"text": "כַּנִּרְאֶה אַתֶּם כִּמְעַט בְּאוֹתוֹ גִּיל – וְנוֹלַדְתֶּם בְּאוֹתָהּ שָׁנָה."}, {"question": "מָה מְשֻׁתָּף לְרֹב הַיְּלָדִים בַּכִּתָּה?", "options": ["הֵם כִּמְעַט בְּאוֹתוֹ גִּיל", "יֵשׁ לָהֶם אוֹתוֹ שֵׁם", "כֻּלָּם גְּבוֹהִים", "כֻּלָּם גָּרִים בְּאוֹתוֹ בַּיִת"], "answer": 0}, {"text": "אַתֶּם לוֹמְדִים בְּאוֹתָהּ כִּתָּה, יֵשׁ לָכֶם אוֹתָם מוֹרִים וְאוֹתָהּ מַעֲרֶכֶת שָׁעוֹת."}, {"text": "אַתֶּם חַיִּים בְּאוֹתוֹ יִשּׁוּב וּמַגִּיעִים לְבֵית הַסֵּפֶר בְּאוֹתָהּ שָׁעָה."}, {"question": "מָה עוֹד מְשֻׁתָּף לַיְּלָדִים בַּכִּתָּה?", "options": ["אוֹתָם מוֹרִים וְאוֹתָהּ מַעֲרֶכֶת שָׁעוֹת", "אוֹתוֹ צֶבַע שֵׂעָר", "אוֹתוֹ אֹכֶל אָהוּב", "אוֹתָם אַחִים"], "answer": 0}, {"text": "אַךְ בְּכִתַּתְכֶם יֵשׁ בָּנִים וְיֵשׁ בָּנוֹת, יֵשׁ גְּבוֹהִים וְיֵשׁ נְמוּכִים, יֵשׁ שְׁמֵנִים וְיֵשׁ רָזִים."}, {"text": "אֶפְשָׁר לִרְאוֹת אִם יֶלֶד הוּא רָזֶה אוֹ שָׁמֵן, גָּבוֹהַּ אוֹ נָמוּךְ, מְמֻשְׁקָף אוֹ בַּעַל נְמָשִׁים – כְּבָר מִמַּבָּט רִאשׁוֹן."}, {"question": "מָה אֶפְשָׁר לִרְאוֹת כְּבָר מִמַּבָּט רִאשׁוֹן?", "options": ["אִם יֶלֶד גָּבוֹהַּ אוֹ נָמוּךְ", "אִם יֶלֶד אַמִּיץ", "אִם יֶלֶד נָדִיב", "אִם יֶלֶד מָהִיר"], "answer": 0}, {"text": "אֲבָל כְּדֵי לָדַעַת אִם הַיֶּלֶד הוּא מָהִיר אוֹ אִטִּי, נָדִיב אוֹ קַמְצָן, אַמִּיץ אוֹ פַּחְדָן, צָרִיךְ לְהַכִּיר אוֹתוֹ וּלְבַלּוֹת אִתּוֹ זְמַן מָה בְּמַצָּבִים שׁוֹנִים."}, {"question": "מָה צָרִיךְ כְּדֵי לָדַעַת אִם יֶלֶד נָדִיב אוֹ קַמְצָן?", "options": ["לְהַכִּיר אוֹתוֹ וּלְבַלּוֹת אִתּוֹ זְמַן", "לְהִסְתַּכֵּל עָלָיו פַּעַם אַחַת", "לִשְׁאֹל אֶת הַמּוֹרָה", "לִמְדֹּד אֶת הַגֹּבַהּ שֶׁלּוֹ"], "answer": 0}, {"question": "מָה הַהֵפֶךְ שֶׁל אַמִּיץ?", "options": ["פַּחְדָן", "נָדִיב", "מָהִיר", "רָזֶה"], "answer": 0}, {"text": "כָּל אֶחָד מִכֶּם דּוֹמֶה לַחֲבֵרִים בַּכִּתָּה בִּדְבָרִים מְסֻיָּמִים, אַךְ שׁוֹנֶה מֵהֶם בִּדְבָרִים אֲחֵרִים."}, {"text": "לְכָל אֶחָד יֵשׁ דְּבָרִים שֶׁהוּא אוֹהֵב בִּמְיֻחָד, דְּבָרִים שֶׁהוּא רוֹצֶה אוֹ לֹא רוֹצֶה לַעֲשׂוֹת;"}, {"text": "וּלְכָל אֶחָד יֵשׁ דְּבָרִים שֶׁעֲלֵיהֶם הוּא לֹא מוּכָן לְוַתֵּר, וְאוּלַי אֲפִלּוּ יֵשׁ דְּבָרִים שֶׁהָיָה מוּכָן לְוַתֵּר עֲלֵיהֶם."}, {"question": "מָה פֵּרוּשׁ \"לְוַתֵּר\"?", "options": ["לְהַסְכִּים לְהִשָּׁאֵר בְּלִי מַשֶּׁהוּ", "לְנַצֵּחַ", "לִכְעֹס", "לְהַבְטִיחַ"], "answer": 0}, {"question": "מָה הָרַעְיוֹן הָעִקָּרִי שֶׁל הַקֶּטַע?", "options": ["כָּל יֶלֶד דּוֹמֶה לַאֲחֵרִים וְגַם שׁוֹנֶה מֵהֶם", "כָּל הַיְּלָדִים בְּדִיּוּק אוֹתוֹ דָּבָר", "צָרִיךְ לְהַגִּיעַ בַּזְּמַן", "אָסוּר לְוַתֵּר אַף פַּעַם"], "answer": 0}]}, {"id": "tuki-1", "title": "טוֹם קָנָה תּוּכִּי 1: חֲלוֹם עִם נוֹצוֹת", "theme": "סיפור: טום קנה תוכי, פרק 1 מתוך 8", "start": true, "steps": [{"text": "טוֹם בֶּן שְׁמוֹנֶה. יֵשׁ לוֹ אוֹפַנַּיִם כְּחֻלִּים, כַּדּוּר שֶׁל כַּדּוּרֶגֶל, קֻפָּה עִם כֶּסֶף מִיּוֹם הַהֻלֶּדֶת, וְהַרְבֵּה חֲבֵרִים. יֵשׁ לוֹ גַּם אַבָּא, אִמָּא וְאָח קָטָן בֶּן שֵׁשׁ שֶׁקּוֹרְאִים לוֹ דִּין."}, {"text": "אֲבָל דָּבָר אֶחָד חָסֵר לְטוֹם: חַיַּת מַחְמָד."}, {"question": "מָה חָסֵר לְטוֹם?", "options": ["חַיַּת מַחְמָד", "אוֹפַנַּיִם", "חֲבֵרִים", "כַּדּוּר"], "answer": 0}, {"text": "לְיוֹאָב, הֶחָבֵר הֲכִי טוֹב שֶׁלּוֹ, יֵשׁ כֶּלֶב. לְנוֹעָה מֵהַכִּתָּה יֵשׁ שְׁנֵי חֲתוּלִים. אֲפִילוּ לַשָּׁכֵן מִלְּמַטָּה יֵשׁ דַּג זָהָב בְּאַקְוַרְיוּם."}, {"question": "לְמִי יֵשׁ כֶּלֶב?", "options": ["לְיוֹאָב", "לְנוֹעָה", "לַשָּׁכֵן", "לְדִין"], "answer": 0}, {"text": "\"רַק לָנוּ אֵין כְּלוּם,\" אָמַר טוֹם בַּאֲרוּחַת הָעֶרֶב."}, {"text": "\"יֵשׁ לָנוּ אֶת דִּין,\" צָחַק אַבָּא. \"הוּא עוֹשֶׂה רַעַשׁ כְּמוֹ גּוּר שֶׁל אַרְיֵה.\""}, {"text": "\"גְּרְרְרְר!\" נָהַם דִּין, וְכֻלָּם צָחֲקוּ."}, {"text": "אֲבָל טוֹם לֹא וִתֵּר. \"אֲנִי רוֹצֶה תּוּכִּי,\" הוּא אָמַר. \"תּוּכִּי יָרֹק שֶׁיּוֹדֵעַ לְדַבֵּר.\""}, {"question": "אֵיזוֹ חַיָּה טוֹם רוֹצֶה?", "options": ["תּוּכִּי יָרֹק", "כֶּלֶב", "אוֹגֵר", "חָתוּל"], "answer": 0}, {"text": "\"תּוּכִּי?\" שָׁאֲלָה אִמָּא. \"תּוּכִּי צָרִיךְ אֹכֶל, מַיִם וּכְלוּב נָקִי. צָרִיךְ לְדַבֵּר אִתּוֹ כָּל יוֹם. זֶה הַרְבֵּה עֲבוֹדָה.\""}, {"text": "\"אֲנִי יָכוֹל!\" אָמַר טוֹם. \"אֲנִי מַבְטִיחַ לִדְאֹג לוֹ כָּל יוֹם.\""}, {"text": "אַבָּא וְאִמָּא הִסְתַּכְּלוּ זֶה עַל זֶה. \"הַשָּׁכֵן מִלְּמַטָּה יוֹצֵא לְחֻפְשָׁה שֶׁל שְׁבוּעַיִם,\" אָמַר אַבָּא. \"אִם תַּאֲכִיל אֶת דַּג הַזָּהָב שֶׁלּוֹ כָּל יוֹם, בְּלִי שֶׁנַּזְכִּיר לְךָ, נְדַבֵּר עַל תּוּכִּי.\""}, {"question": "מָה טוֹם צָרִיךְ לַעֲשׂוֹת כְּדֵי לְקַבֵּל תּוּכִּי?", "options": ["לְהַאֲכִיל אֶת הַדָּג שֶׁל הַשָּׁכֵן", "לְנַקּוֹת אֶת הַחֶדֶר", "לְקַבֵּל צִיּוּן טוֹב", "לִשְׁמֹר עַל דִּין"], "answer": 0}, {"text": "\"עִסְקָה!\" צָעַק טוֹם."}, {"text": "בְּבֵית הַסֵּפֶר סִפֵּר טוֹם לְיוֹאָב וּלְנוֹעָה עַל הַנִּסָּיוֹן. \"שְׁבוּעַיִם שְׁלֵמִים?\" שָׁאַל יוֹאָב. \"אֲנִי שׁוֹכֵחַ לְצַחְצֵחַ שִׁנַּיִם כְּבָר אַחֲרֵי יוֹמַיִם.\""}, {"text": "\"אַתָּה תַּצְלִיחַ,\" אָמְרָה נוֹעָה. \"תִּכְתֹּב פֶּתֶק וְתַדְבִּיק אוֹתוֹ עַל הַדֶּלֶת שֶׁל הַחֶדֶר.\""}, {"text": "טוֹם כָּתַב פֶּתֶק גָּדוֹל בְּטוּשׁ אָדֹם: \"לֹא לִשְׁכֹּחַ אֶת הַדָּג!\" וְהִדְבִּיק אוֹתוֹ עַל הַדֶּלֶת. דִּין צִיֵּר לְיַד הַמִּלִּים דָּג עִם כֶּתֶר."}, {"text": "טוֹם גַּם הֵבִיא מֵהַסִּפְרִיָּה סֵפֶר עַל תּוּכִּים. הוּא לָמַד שֶׁתּוּכִּים חַיִּים הַרְבֵּה שָׁנִים, שֶׁהֵם אוֹהֲבִים פֵּרוֹת, וְשֶׁהֵם צְרִיכִים חֲבֵרִים. \"אֲנִי אֶהְיֶה הֶחָבֵר שֶׁלּוֹ,\" הוּא הֶחְלִיט."}, {"text": "כָּל בֹּקֶר, לִפְנֵי בֵּית הַסֵּפֶר, טוֹם יָרַד בַּמַּדְרֵגוֹת עִם הַמַּפְתֵּחַ שֶׁל הַשָּׁכֵן. הוּא פִּזֵּר קְצָת אֹכֶל בָּאַקְוַרְיוּם וְאָמַר: \"בֹּקֶר טוֹב, דָּגִי!\""}, {"text": "הַדָּג לֹא עָנָה. דָּגִים לֹא מְדַבְּרִים. \"בִּגְלַל זֶה אֲנִי רוֹצֶה תּוּכִּי,\" הִסְבִּיר טוֹם לְדִין."}, {"text": "יוֹם אֶחָד יָרַד גֶּשֶׁם חָזָק, וְטוֹם הָיָה עָיֵף מְאֹד. הוּא כִּמְעַט שָׁכַח. אֲבָל בָּרֶגַע הָאַחֲרוֹן הוּא נִזְכַּר, רָץ לְמַטָּה בַּפִּיגָ'מָה, וְהֶאֱכִיל אֶת הַדָּג."}, {"question": "מָה קָרָה בַּיּוֹם שֶׁל הַגֶּשֶׁם?", "options": ["טוֹם כִּמְעַט שָׁכַח, אֲבָל נִזְכַּר", "טוֹם לֹא הֶאֱכִיל אֶת הַדָּג", "דִּין הֶאֱכִיל אֶת הַדָּג", "הַדָּג בָּרַח"], "answer": 0}, {"text": "אַחֲרֵי שְׁבוּעַיִם חָזַר הַשָּׁכֵן. הַדָּג הָיָה שָׂמֵחַ וּשְׁמַנְמַן."}, {"text": "בָּעֶרֶב אָמַר אַבָּא: \"טוֹם, עָמַדְתָּ בַּמִּבְחָן. בְּיוֹם שִׁשִּׁי נוֹסְעִים לַחֲנוּת הַחַיּוֹת.\""}, {"text": "טוֹם קָפַץ עַל הַסַּפָּה וְצָעַק \"יֵשׁ!\" כָּל כָּךְ חָזָק, שֶׁהַשָּׁכֵן מִלְּמַטָּה דָּפַק עִם מַטְאֲטֵא עַל הַתִּקְרָה."}, {"question": "לָמָּה הַשָּׁכֵן דָּפַק עַל הַתִּקְרָה?", "options": ["כִּי טוֹם צָעַק חָזָק מְאֹד", "כִּי הַדָּג רָעֵב", "כִּי יָרַד גֶּשֶׁם", "כִּי הוּא רָצָה לְבַקֵּר"], "answer": 0}]}, {"id": "tuki-2", "title": "טוֹם קָנָה תּוּכִּי 2: בַּחֲנוּת הַחַיּוֹת", "theme": "סיפור: טום קנה תוכי, פרק 2 מתוך 8", "steps": [{"text": "בְּיוֹם שִׁשִּׁי בַּבֹּקֶר טוֹם הִתְעוֹרֵר לִפְנֵי כֻּלָּם. הוּא פָּתַח אֶת הַקֻּפָּה שֶׁלּוֹ וְסָפַר אֶת הַכֶּסֶף: מֵאָה וְעֶשְׂרִים שְׁקָלִים."}, {"question": "כַּמָּה כֶּסֶף הָיָה בַּקֻּפָּה שֶׁל טוֹם?", "options": ["מֵאָה וְעֶשְׂרִים שְׁקָלִים", "עֶשֶׂר שְׁקָלִים", "חֲמִשִּׁים שְׁקָלִים", "אֶלֶף שְׁקָלִים"], "answer": 0}, {"text": "\"זֶה מַסְפִּיק לְתוּכִּי?\" שָׁאַל."}, {"text": "\"זֶה מַסְפִּיק לְחֵלֶק מֵהַתּוּכִּי,\" אָמְרָה אִמָּא. \"אֶת הַשְּׁאָר נוֹסִיף אֲנַחְנוּ.\""}, {"text": "כָּל הַמִּשְׁפָּחָה נָסְעָה לַחֲנוּת. דִּין יָשַׁב בַּמּוֹשָׁב הָאֲחוֹרִי וְשָׁאַל כָּל דַּקָּה: \"הִגַּעְנוּ? הִגַּעְנוּ?\""}, {"text": "בַּחֲנוּת הָיָה רַעַשׁ גָּדוֹל. כְּלָבִים נָבְחוּ, אוֹגְרִים רָצוּ בְּתוֹךְ גַּלְגַּלִּים, וְצִפּוֹרִים צִיְּצוּ מִכָּל הַצְּדָדִים."}, {"text": "\"אֲנִי רוֹצֶה אוֹגֵר!\" צָעַק דִּין. \"אוֹגֵר קָטָן וְחוּם!\""}, {"text": "\"הַיּוֹם קוֹנִים תּוּכִּי לְטוֹם,\" אָמַר אַבָּא. \"כְּשֶׁתִּהְיֶה בֶּן שְׁמוֹנֶה, נְדַבֵּר.\""}, {"text": "דִּין עָשָׂה פַּרְצוּף עָצוּב, אֲבָל אָז הוּא רָאָה דָּג כָּתֹם עִם פַּסִּים, וְשָׁכַח מֵהָאוֹגֵר."}, {"question": "אֵיזוֹ חַיָּה דִּין רָצָה?", "options": ["אוֹגֵר", "תּוּכִּי", "כֶּלֶב", "דָּג"], "answer": 0}, {"text": "בַּפִּנָּה, בִּכְלוּב גָּדוֹל, יָשְׁבוּ חֲמִשָּׁה תּוּכִּים. הָיָה אֶחָד כָּחֹל, אֶחָד צָהֹב וּשְׁנַיִם לְבָנִים. וְהָיָה אֶחָד יָרֹק, עִם כֶּתֶם צָהֹב עַל הָרֹאשׁ, כְּמוֹ כּוֹבַע קָטָן."}, {"question": "אֵיךְ נִרְאָה הַתּוּכִּי שֶׁטּוֹם בָּחַר?", "options": ["יָרֹק, עִם כֶּתֶם צָהֹב עַל הָרֹאשׁ", "כָּחֹל כֻּלּוֹ", "לָבָן עִם כּוֹבַע", "צָהֹב עִם זָנָב אָדֹם"], "answer": 0}, {"text": "פִּתְאֹם אֶחָד הַתּוּכִּים הַלְּבָנִים צָעַק: \"שָׁלוֹם, מֹתֶק!\""}, {"text": "דִּין נִבְהַל וְהִתְחַבֵּא מֵאֲחוֹרֵי אַבָּא. \"הוּא מְדַבֵּר! הַתּוּכִּי מְדַבֵּר!\""}, {"text": "\"זֶה שׁוֹקוֹ,\" צָחַק הַמּוֹכֵר. \"הוּא גָּר פֹּה כְּבָר עֶשֶׂר שָׁנִים, וְהוּא אוֹמֵר 'שָׁלוֹם, מֹתֶק' לְכָל מִי שֶׁנִּכְנָס. גַּם לַדַּוָּר.\""}, {"text": "הַתּוּכִּי הַיָּרֹק הִתְקָרֵב לְטוֹם. הוּא הִטָּה אֶת הָרֹאשׁ לַצַּד וְהִסְתַּכֵּל עָלָיו בְּעַיִן אַחַת."}, {"text": "\"הוּא בּוֹחֵן אוֹתְךָ,\" אָמַר הַמּוֹכֵר וְחִיֵּךְ. \"נִרְאֶה שֶׁהוּא אוֹהֵב אוֹתְךָ.\""}, {"text": "\"זֶה הוּא,\" לָחַשׁ טוֹם. \"אֲנִי רוֹצֶה אֶת הַיָּרֹק.\""}, {"text": "הַמּוֹכֵר הִסְבִּיר לְטוֹם אֵיךְ לְטַפֵּל בַּתּוּכִּי. \"כָּל יוֹם מַחְלִיפִים מַיִם וּזְרָעִים. פַּעַם בְּשָׁבוּעַ מְנַקִּים אֶת הַכְּלוּב. וְהֲכִי חָשׁוּב: מְדַבְּרִים אִתּוֹ הַרְבֵּה. כָּכָה הוּא לוֹמֵד מִלִּים.\""}, {"question": "מָה הֲכִי חָשׁוּב, לְפִי הַמּוֹכֵר?", "options": ["לְדַבֵּר עִם הַתּוּכִּי הַרְבֵּה", "לָתֵת לוֹ הַרְבֵּה אֹכֶל", "לִשְׁמֹר עָלָיו בַּשֶּׁמֶשׁ", "לְשַׂחֵק אִתּוֹ בְּכַדּוּר"], "answer": 0}, {"text": "\"הוּא בֶּאֱמֶת יְדַבֵּר?\" שָׁאַל טוֹם."}, {"text": "\"אוּלַי,\" אָמַר הַמּוֹכֵר. \"תּוּכִּים לוֹמְדִים לְאַט. וְלִפְעָמִים הֵם לוֹמְדִים דַּוְקָא אֶת הַמִּלִּים שֶׁלֹּא רָצִיתָ.\""}, {"text": "טוֹם שִׁלֵּם בַּקֻּפָּה עִם הַכֶּסֶף שֶׁלּוֹ, וְאַבָּא הוֹסִיף אֶת הַשְּׁאָר. הֵם קָנוּ גַּם כְּלוּב, שַׂק זְרָעִים, וּמַרְאָה קְטַנָּה עִם פַּעֲמוֹן."}, {"question": "מִי שִׁלֵּם עַל הַתּוּכִּי?", "options": ["טוֹם, וְאַבָּא הוֹסִיף", "רַק אִמָּא", "רַק דִּין", "הַמּוֹכֵר נָתַן בְּחִנָּם"], "answer": 0}, {"text": "בַּמְּכוֹנִית שָׁאֲלָה אִמָּא: \"אֵיךְ תִּקְרָא לוֹ?\""}, {"text": "\"פִּיצָה!\" הִצִּיעַ דִּין. \"בַּנָּנָה! מְכוֹנִית!\""}, {"text": "\"מְכוֹנִית זֶה לֹא שֵׁם לְתוּכִּי,\" אָמַר טוֹם."}, {"text": "טוֹם חָשַׁב וְחָשַׁב. \"הוּא יָרֹק... כְּמוֹ קִיוִי! קוֹרְאִים לוֹ קִיוִי.\""}, {"question": "לָמָּה טוֹם קָרָא לַתּוּכִּי קִיוִי?", "options": ["כִּי הוּא יָרֹק כְּמוֹ קִיוִי", "כִּי הוּא שָׂעִיר", "כִּי הוּא אוֹהֵב לֶאֱכֹל קִיוִי", "כִּי כָּכָה קָרָא הַמּוֹכֵר"], "answer": 0}, {"text": "\"קִיוִי!\" צָעַק דִּין. \"כְּמוֹ הַפְּרִי הַשָּׂעִיר!\""}, {"text": "\"אֲבָל קִיוִי שֶׁלָּנוּ לֹא שָׂעִיר,\" צָחַק טוֹם. \"יֵשׁ לוֹ נוֹצוֹת.\""}]}, {"id": "tuki-3", "title": "טוֹם קָנָה תּוּכִּי 3: קִיוִי מַגִּיעַ הַבַּיְתָה", "theme": "סיפור: טום קנה תוכי, פרק 3 מתוך 8", "steps": [{"text": "אֶת הַכְּלוּב שָׂמוּ בַּסָּלוֹן, לְיַד הַחַלּוֹן, אֲבָל לֹא בַּשֶּׁמֶשׁ. כָּכָה אָמַר הַמּוֹכֵר."}, {"text": "קִיוִי לֹא זָז. הוּא יָשַׁב בַּפִּנָּה שֶׁל הַכְּלוּב, נָפוּחַ כְּמוֹ כַּדּוּר קָטָן שֶׁל נוֹצוֹת."}, {"question": "מָה עָשָׂה קִיוִי כְּשֶׁהִגִּיעַ הַבַּיְתָה?", "options": ["יָשַׁב בַּפִּנָּה וְלֹא זָז", "דִּבֵּר הַרְבֵּה", "עָף בַּבַּיִת", "אָכַל אֶת כָּל הַזְּרָעִים"], "answer": 0}, {"text": "\"לָמָּה הוּא לֹא מְדַבֵּר?\" שָׁאַל דִּין, וְהִצְמִיד אֶת הָאַף לַכְּלוּב."}, {"text": "\"הוּא מְפַחֵד,\" אָמְרָה אִמָּא. \"הַכֹּל חָדָשׁ לוֹ. הַבַּיִת חָדָשׁ, הָרֵיחוֹת חֲדָשִׁים, וְגַם אַתֶּם חֲדָשִׁים. צָרִיךְ לָתֵת לוֹ זְמַן.\""}, {"question": "לָמָּה קִיוִי לֹא מְדַבֵּר, לְפִי אִמָּא?", "options": ["כִּי הוּא מְפַחֵד וְהַכֹּל חָדָשׁ לוֹ", "כִּי הוּא חוֹלֶה", "כִּי הוּא כּוֹעֵס", "כִּי הוּא לֹא אוֹהֵב אֶת טוֹם"], "answer": 0}, {"text": "טוֹם הֵבִיא כִּסֵּא וְיָשַׁב לְיַד הַכְּלוּב. הוּא לֹא נָגַע בּוֹ וְלֹא צָעַק. הוּא רַק דִּבֵּר בְּשֶׁקֶט."}, {"question": "אֵיךְ טוֹם דִּבֵּר עִם קִיוִי?", "options": ["בְּשֶׁקֶט, בְּלִי לָגַעַת", "בִּצְעָקוֹת", "בְּשִׁירָה", "דֶּרֶךְ הַטֶּלֶפוֹן"], "answer": 0}, {"text": "\"שָׁלוֹם, קִיוִי. אֲנִי טוֹם. זֶה הַבַּיִת שֶׁלְּךָ עַכְשָׁו. אַל תְּפַחֵד.\""}, {"text": "קִיוִי פָּתַח עַיִן אַחַת, וְסָגַר אוֹתָהּ שׁוּב."}, {"text": "כָּל הָעֶרֶב טוֹם סִפֵּר לְקִיוִי עַל עַצְמוֹ. הוּא סִפֵּר עַל הָאוֹפַנַּיִם הַכְּחֻלִּים, עַל יוֹאָב וְעַל נוֹעָה, וְעַל מִשְׂחַק הַכַּדּוּר בַּהַפְסָקָה. הוּא אֲפִילוּ סִפֵּר לוֹ בְּדִיחָה."}, {"text": "\"לָמָּה הַתַּרְנְגֹלֶת חָצְתָה אֶת הַכְּבִישׁ? כְּדֵי לְהַגִּיעַ לַצַּד הַשֵּׁנִי!\""}, {"text": "קִיוִי לֹא צָחַק. אֲבָל דִּין צָחַק כָּל כָּךְ, שֶׁהוּא נָפַל מֵהַסַּפָּה."}, {"question": "מִי צָחַק מֵהַבְּדִיחָה?", "options": ["דִּין", "קִיוִי", "אַבָּא", "אַף אֶחָד"], "answer": 0}, {"text": "בַּלַּיְלָה טוֹם לֹא הִצְלִיחַ לְהֵרָדֵם. \"אוּלַי קַר לוֹ? אוּלַי הוּא רָעֵב? אוּלַי הוּא מַרְגִּישׁ לְבַד?\" הוּא קָם עַל קְצוֹת הָאֶצְבָּעוֹת וְהָלַךְ לַסָּלוֹן."}, {"text": "אַבָּא כְּבָר הָיָה שָׁם. הוּא כִּסָּה אֶת הַכְּלוּב בְּמַגֶּבֶת."}, {"question": "לָמָּה אַבָּא כִּסָּה אֶת הַכְּלוּב?", "options": ["כְּדֵי שֶׁקִּיוִי יַרְגִּישׁ שֶׁזֶּה לַיְלָה", "כִּי הָיָה חַם", "כִּי קִיוִי עָשָׂה רַעַשׁ", "כְּדֵי לְהַסְתִּיר אוֹתוֹ מִדִּין"], "answer": 0}, {"text": "\"כָּכָה הוּא יַרְגִּישׁ שֶׁזֶּה לַיְלָה,\" לָחַשׁ אַבָּא. \"גַּם תּוּכִּים צְרִיכִים לִישֹׁן.\""}, {"text": "\"לַיְלָה טוֹב, קִיוִי,\" לָחַשׁ טוֹם."}, {"text": "מִתּוֹךְ הַכְּלוּב נִשְׁמַע צִיּוּץ קָטָן וְשָׁקֵט: \"צִיפּ.\""}, {"text": "\"שָׁמַעְתָּ?\" טוֹם תָּפַס אֶת הַיָּד שֶׁל אַבָּא. \"הוּא עָנָה לִי!\""}, {"text": "בַּבֹּקֶר, כְּשֶׁאִמָּא הוֹרִידָה אֶת הַמַּגֶּבֶת, קִיוִי כְּבָר לֹא יָשַׁב בַּפִּנָּה. הוּא עָמַד עַל הַמּוֹט, אָכַל זְרָעִים וְהִסְתַּכֵּל בַּמַּרְאָה הַקְּטַנָּה."}, {"text": "דִּינְג! הוּא נָקַשׁ בַּפַּעֲמוֹן. דִּינְג! דִּינְג!"}, {"text": "\"הוּא מְנַגֵּן!\" צָעַק דִּין."}, {"question": "מָה עָשָׂה קִיוִי בַּבֹּקֶר?", "options": ["נָקַשׁ בַּפַּעֲמוֹן", "אָמַר שָׁלוֹם", "בָּרַח מֵהַכְּלוּב", "יָשַׁן כָּל הַיּוֹם"], "answer": 0}, {"text": "\"הוּא מַרְגִּישׁ בַּבַּיִת,\" חִיֵּךְ טוֹם."}, {"text": "לִפְנֵי שֶׁיָּצְאוּ לְבֵית הַסֵּפֶר, טוֹם הֶחְלִיף לְקִיוִי אֶת הַמַּיִם וְהוֹסִיף זְרָעִים. דִּין רָצָה לְהַכְנִיס אֶצְבַּע לַכְּלוּב."}, {"text": "\"עוֹד לֹא,\" אָמַר טוֹם. \"הַמּוֹכֵר אָמַר שֶׁצָּרִיךְ לְחַכּוֹת שֶׁהוּא יַכִּיר אוֹתָנוּ. אַחֶרֶת הוּא יְנַקֵּר.\""}, {"text": "\"מָה זֶה יְנַקֵּר?\" שָׁאַל דִּין."}, {"text": "\"זֶה כְּמוֹ צְבִיטָה, רַק עִם מַקּוֹר,\" הִסְבִּיר טוֹם. דִּין הֶחְבִּיא מַהֵר אֶת הַיָּדַיִם בַּכִּיסִים."}]}, {"id": "tuki-4", "title": "טוֹם קָנָה תּוּכִּי 4: הַמִּלָּה הָרִאשׁוֹנָה", "theme": "סיפור: טום קנה תוכי, פרק 4 מתוך 8", "steps": [{"text": "עָבַר שָׁבוּעַ. כָּל יוֹם, אַחֲרֵי בֵּית הַסֵּפֶר, טוֹם יָשַׁב לְיַד קִיוִי וְלִמֵּד אוֹתוֹ מִלָּה אַחַת."}, {"text": "\"שָׁ-לוֹם,\" אָמַר טוֹם לְאַט. \"שָׁ-לוֹם, קִיוִי.\""}, {"text": "קִיוִי הִטָּה אֶת הָרֹאשׁ וְאָמַר: \"צִיפּ.\""}, {"text": "\"לֹא צִיפּ. שָׁלוֹם!\""}, {"text": "\"צִיפּ צִיפּ.\""}, {"question": "מָה קִיוִי עָנָה כְּשֶׁטּוֹם אָמַר \"שָׁלוֹם\"?", "options": ["צִיפּ", "שָׁלוֹם", "גּוֹל", "טוֹם"], "answer": 0}, {"text": "טוֹם נֶאֱנַח. \"זֶה יִקַּח הַרְבֵּה זְמַן,\" אָמַר לְאִמָּא."}, {"text": "\"גַּם אַתָּה לֹא דִּבַּרְתָּ בַּיּוֹם הָרִאשׁוֹן שֶׁלְּךָ,\" צָחֲקָה אִמָּא. \"הַמִּלָּה הָרִאשׁוֹנָה שֶׁלְּךָ הָיְתָה 'כַּדּוּר'.\""}, {"question": "מָה הָיְתָה הַמִּלָּה הָרִאשׁוֹנָה שֶׁל טוֹם?", "options": ["כַּדּוּר", "אִמָּא", "אַבָּא", "תּוּכִּי"], "answer": 0}, {"text": "גַּם יוֹאָב וְנוֹעָה בָּאוּ לְנַסּוֹת."}, {"text": "\"אוּלַי הוּא מֵבִין רַק אַנְגְּלִית,\" אָמַר יוֹאָב, וְאָמַר לְקִיוִי: \"הֶלוֹ!\""}, {"text": "\"צִיפּ,\" עָנָה קִיוִי."}, {"text": "\"אוּלַי הוּא אוֹהֵב שִׁירִים,\" אָמְרָה נוֹעָה, וְשָׁרָה לוֹ שִׁיר שֶׁל יוֹם הֻלֶּדֶת. קִיוִי הִסְתּוֹבֵב אֵלֶיהָ עִם הַגַּב."}, {"text": "דִּין נִסָּה לְלַמֵּד אֶת קִיוִי לְהַגִּיד \"פִּיפִּי\". \"דִּין!\" אָמְרָה אִמָּא. \"מָה? זֶה מַצְחִיק!\" אָמַר דִּין."}, {"text": "בָּעֲרָבִים, טוֹם וְאַבָּא אָהֲבוּ לִצְפּוֹת בְּמִשְׂחֲקֵי כַּדּוּרֶגֶל בַּטֵּלֶוִיזְיָה. כָּל פַּעַם שֶׁהַקְּבוּצָה שֶׁלָּהֶם הִבְקִיעָה, הֵם קָפְצוּ מֵהַסַּפָּה וְצָעֲקוּ \"גּוֹל!\" בְּקוֹל רָם."}, {"question": "מָה טוֹם וְאַבָּא צוֹעֲקִים כְּשֶׁהַקְּבוּצָה מַבְקִיעָה?", "options": ["גּוֹל", "יֵשׁ", "הֻרָּה", "שָׁלוֹם"], "answer": 0}, {"text": "קִיוִי הִסְתַּכֵּל עֲלֵיהֶם מֵהַכְּלוּב. הוּא לֹא אָמַר כְּלוּם."}, {"text": "לְאַבָּא הָיָה גַּם הֶרְגֵּל מַצְחִיק. כָּל פַּעַם שֶׁהוּא הִתְעַטֵּשׁ, זֶה נִשְׁמַע כְּמוֹ צְפִירָה שֶׁל מְכוֹנִית: \"אַפְּצִ'ייי!\" דִּין תָּמִיד צָחַק מִזֶּה."}, {"text": "וְהַטֶּלֶפוֹן שֶׁל אִמָּא צִלְצֵל כָּל הַזְּמַן: טִי-רִי-רִי, טִי-רִי-רִי."}, {"text": "יוֹם אֶחָד, בְּאֶמְצַע אֲרוּחַת הַצָּהֳרַיִם, נִשְׁמַע צִלְצוּל. טִי-רִי-רִי!"}, {"text": "אִמָּא קָמָה לְחַפֵּשׂ אֶת הַטֶּלֶפוֹן. הִיא חִפְּשָׂה בַּתִּיק, בַּמִּטְבָּח וּמִתַּחַת לַכָּרִיּוֹת. \"אֵיפֹה הוּא?\""}, {"text": "טִי-רִי-רִי!"}, {"text": "וְאָז הִיא רָאֲתָה אֶת הַטֶּלֶפוֹן עַל הַשֻּׁלְחָן, לְיַד הַצַּלַּחַת שֶׁלָּהּ. הַמָּסָךְ הָיָה שָׁחֹר."}, {"question": "לָמָּה אִמָּא לֹא מָצְאָה מִי מְצַלְצֵל?", "options": ["כִּי הַטֶּלֶפוֹן לֹא צִלְצֵל בִּכְלָל", "כִּי הַטֶּלֶפוֹן הָיָה בַּתִּיק", "כִּי דִּין הִסְתִּיר אוֹתוֹ", "כִּי הַטֶּלֶפוֹן נִשְׁבַּר"], "answer": 0}, {"text": "כֻּלָּם הִסְתּוֹבְבוּ לְאַט אֶל הַכְּלוּב. קִיוִי עָמַד עַל הַמּוֹט, מְאֹד מְרֻצֶּה מֵעַצְמוֹ."}, {"text": "\"טִי-רִי-רִי,\" אָמַר קִיוִי."}, {"question": "מִי עָשָׂה אֶת הַצִּלְצוּל?", "options": ["קִיוִי", "הַטֶּלֶפוֹן", "דִּין", "הַשָּׁכֵן"], "answer": 0}, {"text": "כָּל הַמִּשְׁפָּחָה פָּרְצָה בִּצְחוֹק. דִּין צָחַק כָּל כָּךְ, שֶׁיָּצָא לוֹ מִיץ מֵהָאַף."}, {"text": "\"הוּא לֹא אָמַר שָׁלוֹם,\" אָמַר טוֹם, \"אֲבָל הוּא מְחַקֶּה! הוּא לוֹמֵד!\""}, {"text": "בָּעֶרֶב אַבָּא הִתְעַטֵּשׁ: \"אַפְּצִ'ייי!\""}, {"text": "וּמֵהַכְּלוּב נִשְׁמַע מִיָּד: \"אַפְּצִ'ייי!\""}, {"text": "\"זָכִיתִי בְּתַלְמִיד,\" אָמַר אַבָּא, וּמָחָה אֶת הָאַף. \"לְפָחוֹת הוּא לֹא צָרִיךְ מִמְחָטָה.\""}, {"question": "אֵיזֶה קוֹל שֶׁל אַבָּא קִיוִי חִקָּה?", "options": ["הָעִטּוּשׁ", "הַצְּחוֹק", "הַשִּׁירָה", "הַצְּעָקָה"], "answer": 0}]}, {"id": "tuki-5", "title": "טוֹם קָנָה תּוּכִּי 5: הַדֶּלֶת הַפְּתוּחָה", "theme": "סיפור: טום קנה תוכי, פרק 5 מתוך 8", "steps": [{"text": "דִּין אָהַב אֶת קִיוִי כִּמְעַט כְּמוֹ טוֹם. הוּא רַק הָיָה קְצָת קָטָן מִדַּי כְּדֵי לִזְכֹּר אֶת הַכְּלָלִים."}, {"text": "הַכְּלָל הֲכִי חָשׁוּב בַּבַּיִת הָיָה: אֶת הַכְּלוּב פּוֹתְחִים רַק כְּשֶׁכָּל הַחַלּוֹנוֹת סְגוּרִים."}, {"question": "מָה הַכְּלָל הֲכִי חָשׁוּב בַּבַּיִת?", "options": ["פּוֹתְחִים אֶת הַכְּלוּב רַק כְּשֶׁהַחַלּוֹנוֹת סְגוּרִים", "לֹא נוֹגְעִים בַּתּוּכִּי", "מַאֲכִילִים רַק בַּבֹּקֶר", "לֹא צוֹעֲקִים בַּבַּיִת"], "answer": 0}, {"text": "דִּין רָצָה מְאֹד שֶׁגַּם לוֹ יִהְיֶה תַּפְקִיד. \"אֲנִי כְּבָר גָּדוֹל,\" הוּא אָמַר כָּל יוֹם. \"אֲנִי יָכוֹל לְהַאֲכִיל אֶת קִיוִי לְבַד.\""}, {"text": "\"כְּשֶׁתִּהְיֶה קְצָת יוֹתֵר גָּדוֹל,\" עָנָה טוֹם כָּל פַּעַם, וְדִין כָּל פַּעַם כָּעַס."}, {"text": "בְּיוֹם שְׁלִישִׁי טוֹם חָזַר מְאֻחָר מֵחוּג כַּדּוּרֶגֶל. אִמָּא דִּבְּרָה בַּטֶּלֶפוֹן, בַּטֶּלֶפוֹן הָאֲמִתִּי, בַּחֶדֶר הַשֵּׁנִי. דִּין נִשְׁאַר לְבַד בַּסָּלוֹן עִם קִיוִי."}, {"text": "\"קִיוִי רָעֵב,\" אָמַר דִּין לְעַצְמוֹ. \"אֲנִי אֶתֵּן לוֹ חֲתִיכַת תַּפּוּחַ, כְּמוֹ שֶׁטּוֹם עוֹשֶׂה.\""}, {"text": "הוּא פָּתַח אֶת הַדֶּלֶת הַקְּטַנָּה שֶׁל הַכְּלוּב וְהִכְנִיס אֶת הַתַּפּוּחַ. קִיוִי לָקַח אוֹתוֹ בַּמַּקּוֹר."}, {"question": "לָמָּה דִּין פָּתַח אֶת הַכְּלוּב?", "options": ["כְּדֵי לָתֵת לְקִיוִי תַּפּוּחַ", "כְּדֵי לְשַׂחֵק אִתּוֹ", "כְּדֵי לְנַקּוֹת", "כְּדֵי שֶׁיָּעוּף"], "answer": 0}, {"text": "וְאָז דִּין שָׁמַע מוּזִיקָה מֵהָרְחוֹב. מְכוֹנִית שֶׁל גְּלִידָה! הוּא רָץ אֶל הַחַלּוֹן, פָּתַח אוֹתוֹ לִרְוָחָה וְהוֹצִיא אֶת הָרֹאשׁ הַחוּצָה."}, {"question": "לָמָּה דִּין רָץ לַחַלּוֹן?", "options": ["הוּא שָׁמַע מְכוֹנִית שֶׁל גְּלִידָה", "הוּא שָׁמַע אֶת טוֹם", "הוּא רָאָה כֶּלֶב", "הָיָה לוֹ חַם"], "answer": 0}, {"text": "הוּא שָׁכַח לִסְגֹּר אֶת הַכְּלוּב."}, {"text": "קִיוִי הֵצִיץ מֵהַדֶּלֶת הַפְּתוּחָה. הוּא קָפַץ אֶל הַשֻּׁלְחָן, וְאָז אֶל הַסַּפָּה, וְאָז... פְרְרְרְר! הוּא עָף יָשָׁר מֵעַל הָרֹאשׁ שֶׁל דִּין, וְהַחוּצָה מֵהַחַלּוֹן."}, {"text": "\"לֹא! קִיוִי, תַּחְזֹר!\" צָעַק דִּין."}, {"text": "הוּא צָעַק מֵהַחַלּוֹן: \"קִיוִי! יֵשׁ תַּפּוּחַ!\" אֲבָל רַק מְכוֹנִית הַגְּלִידָה עָנְתָה לוֹ, עִם הַמּוּזִיקָה שֶׁלָּהּ, שֶׁפִּתְאֹם נִשְׁמְעָה עֲצוּבָה מְאֹד."}, {"text": "אֲבָל קִיוִי כְּבָר הָיָה נְקֻדָּה יְרֻקָּה קְטַנָּה בַּשָּׁמַיִם, וְאָז הוּא נֶעֱלַם מֵאֲחוֹרֵי הָעֵצִים."}, {"question": "אֵיךְ קִיוִי יָצָא מֵהַבַּיִת?", "options": ["עָף מֵהַחַלּוֹן הַפָּתוּחַ", "יָצָא מֵהַדֶּלֶת", "דִּין הוֹצִיא אוֹתוֹ", "אִמָּא שִׁחְרְרָה אוֹתוֹ"], "answer": 0}, {"text": "בְּדִיּוּק אָז נִפְתְּחָה דֶּלֶת הַבַּיִת. טוֹם נִכְנַס עִם הַכַּדּוּר מִתַּחַת לַיָּד. הוּא רָאָה אֶת הַכְּלוּב הָרֵיק, אֶת הַחַלּוֹן הַפָּתוּחַ, וְאֶת דִּין בּוֹכֶה."}, {"text": "\"אֵיפֹה קִיוִי?\" שָׁאַל בְּקוֹל רוֹעֵד."}, {"text": "\"הוּא... הוּא עָף,\" יִבֵּב דִּין. \"אֲנִי רַק רָצִיתִי לָתֵת לוֹ תַּפּוּחַ.\""}, {"text": "טוֹם הִרְגִּישׁ שֶׁהַלֵּב שֶׁלּוֹ נוֹפֵל עַד הָרִצְפָּה. הוּא רָצָה לִצְעֹק עַל דִּין. הוּא רָצָה לִבְכּוֹת. הוּא רָצָה לִצְעֹק וְלִבְכּוֹת בְּיַחַד."}, {"question": "אֵיךְ טוֹם הִרְגִּישׁ כְּשֶׁרָאָה אֶת הַכְּלוּב הָרֵיק?", "options": ["כּוֹעֵס וְעָצוּב", "שָׂמֵחַ", "רָגוּעַ", "עָיֵף"], "answer": 0}, {"text": "אִמָּא בָּאָה בְּרִיצָה וְחִבְּקָה אֶת שְׁנֵיהֶם. \"עַכְשָׁו זֶה לֹא הַזְּמַן לִכְעֹס,\" הִיא אָמְרָה. \"עַכְשָׁו זֶה הַזְּמַן לְחַפֵּשׂ. תּוּכִּים לֹא עָפִים רָחוֹק בַּפַּעַם הָרִאשׁוֹנָה. הוּא בֶּטַח קָרוֹב.\""}, {"text": "טוֹם נָשַׁם עָמֹק וְנִגֵּב אֶת הָעֵינַיִם."}, {"text": "\"אַתְּ צוֹדֶקֶת,\" הוּא אָמַר. \"אֲנִי לוֹקֵחַ אֶת הָאוֹפַנַּיִם וְקוֹרֵא לְיוֹאָב וּלְנוֹעָה. אֲנַחְנוּ נִמְצָא אוֹתוֹ.\""}, {"text": "\"גַּם אֲנִי רוֹצֶה לַעֲזֹר,\" אָמַר דִּין בְּשֶׁקֶט."}, {"text": "טוֹם הִסְתַּכֵּל עָלָיו רֶגַע אָרֹךְ. \"בְּסֵדֶר,\" אָמַר לְבַסּוֹף. \"אֲבָל הַפַּעַם תַּקְשִׁיב לִי.\""}, {"question": "מָה אָמְרָה אִמָּא שֶׁצָּרִיךְ לַעֲשׂוֹת עַכְשָׁו?", "options": ["לְחַפֵּשׂ אֶת קִיוִי", "לִכְעֹס עַל דִּין", "לִקְנוֹת תּוּכִּי חָדָשׁ", "לְחַכּוֹת בַּבַּיִת"], "answer": 0}]}, {"id": "tuki-6", "title": "טוֹם קָנָה תּוּכִּי 6: הַחִפּוּשׂ הַגָּדוֹל", "theme": "סיפור: טום קנה תוכי, פרק 6 מתוך 8", "steps": [{"text": "תּוֹךְ חָמֵשׁ דַּקּוֹת יוֹאָב וְנוֹעָה הָיוּ לְמַטָּה, כָּל אֶחָד עַל הָאוֹפַנַּיִם שֶׁלּוֹ. דִּין הָלַךְ עִם אִמָּא, וְהֶחְזִיק בַּיָּד חֲתִיכַת תַּפּוּחַ, לְמִקְרֶה שֶׁקִּיוִי יִהְיֶה רָעֵב."}, {"question": "מָה דִּין לָקַח אִתּוֹ לַחִפּוּשׂ?", "options": ["חֲתִיכַת תַּפּוּחַ", "כַּדּוּר", "כְּלוּב", "פַּנָּס"], "answer": 0}, {"text": "\"תַּקְשִׁיבוּ,\" אָמַר טוֹם. \"קִיוִי יָרֹק, עִם כֶּתֶם צָהֹב עַל הָרֹאשׁ. הוּא אוֹהֵב תַּפּוּחִים וּמְחַקֶּה קוֹלוֹת.\""}, {"text": "\"מְחַקֶּה קוֹלוֹת?\" שָׁאַל יוֹאָב. \"אָז אוּלַי נִשְׁמַע אוֹתוֹ.\""}, {"text": "הֵם רָכְבוּ לְאַט בָּרְחוֹב וְהִסְתַּכְּלוּ לְמַעְלָה, עַל כָּל עֵץ וְעַל כָּל גַּג."}, {"text": "\"קִיוִי! קִיוִי!\" קָרְאוּ כֻּלָּם."}, {"text": "עַל עֵץ גָּבוֹהַּ נִרְאָה מַשֶּׁהוּ יָרֹק. \"הִנֵּה הוּא!\" צָעֲקָה נוֹעָה."}, {"text": "הֵם הִתְקָרְבוּ, וְרָאוּ שֶׁזֶּה בִּכְלָל לֹא תּוּכִּי. זֶה הָיָה בַּקְבּוּק יָרֹק שֶׁל מַיִם, שֶׁמִּישֶׁהוּ זָרַק וְהוּא נִתְקַע בֵּין הָעֲנָפִים."}, {"text": "\"אוּף,\" אָמְרָה נוֹעָה. \"אֲנִי צְרִיכָה מִשְׁקָפַיִם.\""}, {"question": "מָה הָיָה הַדָּבָר הַיָּרֹק עַל הָעֵץ?", "options": ["בַּקְבּוּק שֶׁל מַיִם", "קִיוִי", "תּוּכִּי אַחֵר", "כַּדּוּר"], "answer": 0}, {"text": "יוֹאָב עָצַר אֶת הָאוֹפַנַּיִם. \"בּוֹאוּ נִתְחַלֵּק,\" הוּא הִצִּיעַ. \"אֲנִי אֶבְדֹּק בָּרְחוֹב שֶׁל בֵּית הַסֵּפֶר, וְנוֹעָה בַּגִּנָּה.\""}, {"text": "\"לֹא,\" אָמַר טוֹם. \"אִם נִתְפַּזֵּר, לֹא נֵדַע מִי מָצָא אוֹתוֹ. נִשָּׁאֵר בְּיַחַד.\""}, {"text": "הֵם הִמְשִׁיכוּ לְגִנַּת הַמִּשְׂחָקִים. הֵם שָׁאֲלוּ אֶת הַיְּלָדִים עַל הַנַּדְנֵדוֹת. הֵם שָׁאֲלוּ אִישָׁה עִם כֶּלֶב. הֵם שָׁאֲלוּ אֶת הַמּוֹכֵר בַּמַּכֹּלֶת."}, {"text": "הָאִישָׁה עִם הַכֶּלֶב לֹא רָאֲתָה כְּלוּם. אֲבָל הַכֶּלֶב שֶׁלָּהּ נָבַח עַל כָּל עֵץ, וְכָל פַּעַם כֻּלָּם הִסְתַּכְּלוּ לְמַעְלָה בְּתִקְוָה. בַּסּוֹף הִתְבָּרֵר שֶׁהוּא סְתָם נוֹבֵחַ עַל חֲתוּלִים."}, {"text": "דִּין הִתְחִיל לְהִתְעַיֵּף. \"זֶה בִּגְלָלִי,\" הוּא לָחַשׁ לְאִמָּא, וְהַשְּׂפָתַיִם שֶׁלּוֹ רָעֲדוּ."}, {"text": "\"מָתוֹק שֶׁלִּי, כֻּלָּם טוֹעִים לִפְעָמִים,\" אָמְרָה אִמָּא. \"מָה שֶׁחָשׁוּב זֶה מָה עוֹשִׂים אַחַר כָּךְ. וְאַתָּה עוֹזֵר לְחַפֵּשׂ.\""}, {"text": "\"תּוּכִּי יָרֹק?\" אָמַר הַמּוֹכֵר וְגֵרֵד בָּרֹאשׁ. \"לֹא רָאִיתִי. אֲבָל לִפְנֵי רֶבַע שָׁעָה שָׁמַעְתִּי מִישֶׁהוּ מִתְעַטֵּשׁ מוּזָר מְאֹד לְיַד הַחֲנוּת, וְלֹא הָיָה שָׁם אַף אֶחָד.\""}, {"question": "מָה שָׁמַע הַמּוֹכֵר בַּמַּכֹּלֶת?", "options": ["מִישֶׁהוּ מִתְעַטֵּשׁ מוּזָר", "מִישֶׁהוּ שָׁר", "טֶלֶפוֹן מְצַלְצֵל", "כֶּלֶב נוֹבֵחַ"], "answer": 0}, {"text": "טוֹם וְדִין הִסְתַּכְּלוּ זֶה עַל זֶה. \"אַפְּצִ'ייי!\" אָמְרוּ שְׁנֵיהֶם בְּיַחַד."}, {"question": "אֵיךְ טוֹם וְדִין יָדְעוּ שֶׁזֶּה קִיוִי?", "options": ["כִּי קִיוִי מִתְעַטֵּשׁ כְּמוֹ אַבָּא", "כִּי הַמּוֹכֵר רָאָה אוֹתוֹ", "כִּי קִיוִי אָמַר אֶת הַשֵּׁם שֶׁלּוֹ", "כִּי הֵם מָצְאוּ נוֹצָה"], "answer": 0}, {"text": "\"זֶה הוּא!\" אָמַר טוֹם. \"לְאָן הוּא עָף?\""}, {"text": "\"נִדְמֶה לִי שֶׁהוּא עָף לַמִּגְרָשׁ,\" אָמַר הַמּוֹכֵר."}, {"text": "הַשֶּׁמֶשׁ כְּבָר הִתְחִילָה לִשְׁקֹעַ, וְהַשָּׁמַיִם הָיוּ כְּתֻמִּים. טוֹם יָדַע שֶׁבַּחֹשֶׁךְ יִהְיֶה קָשֶׁה מְאֹד לִמְצֹא צִפּוֹר יְרֻקָּה."}, {"question": "לָמָּה טוֹם רָצָה לְהִזְדָּרֵז?", "options": ["כִּי בַּחֹשֶׁךְ יִהְיֶה קָשֶׁה לִמְצֹא אוֹתוֹ", "כִּי הוּא הָיָה רָעֵב", "כִּי הַמִּשְׂחָק הִתְחִיל", "כִּי יָרַד גֶּשֶׁם"], "answer": 0}, {"text": "\"מַהֵר,\" הוּא אָמַר. \"לַמִּגְרָשׁ!\""}, {"text": "הֵם רָכְבוּ הֲכִי מַהֵר שֶׁיָּכְלוּ. דִּין וְאִמָּא רָצוּ אַחֲרֵיהֶם."}, {"text": "בַּמִּגְרָשׁ שִׂחֲקוּ יְלָדִים גְּדוֹלִים כַּדּוּרֶגֶל. הָיָה רַעַשׁ שֶׁל צְעָקוֹת וּבְעִיטוֹת, וְאִי אֶפְשָׁר הָיָה לִשְׁמֹעַ שׁוּם צִפּוֹר."}, {"text": "\"אֵיךְ נִמְצָא אוֹתוֹ פֹּה?\" שָׁאֲלָה נוֹעָה."}, {"text": "טוֹם הִסְתַּכֵּל עַל הָעֵצִים הַגְּבוֹהִים מִסָּבִיב לַמִּגְרָשׁ. הוּא לֹא רָאָה כְּלוּם. רַק עָלִים יְרֻקִּים, יְרֻקִּים, יְרֻקִּים."}, {"question": "לָמָּה קָשֶׁה לִמְצֹא אֶת קִיוִי בָּעֵצִים?", "options": ["כִּי הוּא יָרֹק כְּמוֹ הָעָלִים", "כִּי הוּא קָטָן מִדַּי", "כִּי הוּא מִתְחַבֵּא בָּאֲדָמָה", "כִּי הוּא שָׁקֵט"], "answer": 0}]}, {"id": "tuki-7", "title": "טוֹם קָנָה תּוּכִּי 7: גּוֹל!", "theme": "סיפור: טום קנה תוכי, פרק 7 מתוך 8", "steps": [{"text": "טוֹם עָמַד בְּצַד הַמִּגְרָשׁ, וְלֹא יָדַע מָה לַעֲשׂוֹת."}, {"text": "פִּתְאֹם אֶחָד הַשַּׂחְקָנִים הַגְּדוֹלִים בָּעַט, וְהַכַּדּוּר נִכְנַס לַשַּׁעַר. \"גּוֹל!\" צָעֲקוּ כָּל הַשַּׂחְקָנִים."}, {"text": "וּמִתּוֹךְ הָעֵץ הֲכִי גָּבוֹהַּ, מֵאֲחוֹרֵי הַשַּׁעַר, נִשְׁמַע קוֹל קָטָן וְצַרְחָנִי: \"גּוֹל! גּוֹל!\""}, {"question": "אֵיךְ טוֹם מָצָא אֶת קִיוִי?", "options": ["קִיוִי צָעַק \"גּוֹל\" אַחֲרֵי הַשַּׂחְקָנִים", "קִיוִי עָף אֵלָיו", "דִּין רָאָה אוֹתוֹ", "נוֹעָה שָׁמְעָה צִיּוּץ"], "answer": 0}, {"text": "כָּל הַשַּׂחְקָנִים עָצְרוּ. \"מִי אָמַר אֶת זֶה?\""}, {"text": "\"זֶה הַתּוּכִּי שֶׁלִּי!\" צָעַק טוֹם, וְזָרַק אֶת הָאוֹפַנַּיִם עַל הַדֶּשֶׁא."}, {"text": "טוֹם רָץ אֶל הָעֵץ. שָׁם, עַל עָנָף גָּבוֹהַּ, יָשַׁב כַּדּוּר קָטָן שֶׁל נוֹצוֹת יְרֻקּוֹת, עִם כֶּתֶם צָהֹב עַל הָרֹאשׁ."}, {"text": "\"קִיוִי!\" צָעַק טוֹם. \"לָמַדְתָּ מִלָּה! לָמַדְתָּ מִלָּה אֲמִתִּית!\""}, {"question": "לָמָּה טוֹם שָׂמַח כָּל כָּךְ?", "options": ["כִּי קִיוִי נִמְצָא וְגַם לָמַד מִלָּה", "כִּי הַקְּבוּצָה נִצְּחָה", "כִּי הוּא הִבְקִיעַ", "כִּי הוּא קִבֵּל גְּלִידָה"], "answer": 0}, {"text": "\"גּוֹל!\" עָנָה קִיוִי בְּגַאֲוָה."}, {"text": "הַשַּׂחְקָנִים הַגְּדוֹלִים צָחֲקוּ. \"יֵשׁ לָכֶם תּוּכִּי אוֹהֵד,\" אָמַר אֶחָד מֵהֶם. \"הוּא יָכוֹל לָבוֹא לְכָל הַמִּשְׂחָקִים שֶׁלָּנוּ.\""}, {"text": "אֲבָל אֵיךְ מוֹרִידִים אוֹתוֹ? הָעָנָף הָיָה גָּבוֹהַּ מְאֹד, יוֹתֵר גָּבוֹהַּ מֵהַשַּׁעַר."}, {"text": "\"נְטַפֵּס?\" הִצִּיעַ יוֹאָב."}, {"text": "\"לֹא!\" אָמְרָה אִמָּא, שֶׁהִגִּיעָה בְּרִיצָה. \"אַף אֶחָד לֹא מְטַפֵּס. זֶה מְסֻכָּן.\""}, {"question": "לָמָּה אִמָּא לֹא הִסְכִּימָה לְטַפֵּס?", "options": ["כִּי זֶה מְסֻכָּן", "כִּי הָעֵץ שֶׁל הַשָּׁכֵן", "כִּי כְּבָר חֹשֶׁךְ", "כִּי קִיוִי יִכְעַס"], "answer": 0}, {"text": "\"נִזְרֹק לוֹ אֶת הַכַּדּוּר?\" הִצִּיעָה נוֹעָה."}, {"text": "\"הוּא יִבָּהֵל וְיָעוּף עוֹד יוֹתֵר רָחוֹק,\" אָמַר טוֹם."}, {"text": "וְאָז דִּין מָשַׁךְ בַּחֻלְצָה שֶׁל טוֹם. \"טוֹם,\" הוּא לָחַשׁ, \"הֵבֵאתִי תַּפּוּחַ.\""}, {"question": "מָה הָיָה הָרַעְיוֹן שֶׁל דִּין?", "options": ["לְהַרְאוֹת לְקִיוִי תַּפּוּחַ", "לִזְרֹק כַּדּוּר", "לְטַפֵּס עַל הָעֵץ", "לִקְרֹא לְאַבָּא"], "answer": 0}, {"text": "טוֹם הִסְתַּכֵּל עַל אָחִיו הַקָּטָן. \"דִּין, אַתָּה גָּאוֹן!\""}, {"text": "טוֹם הֵרִים אֶת דִּין עַל הַכְּתֵפַיִם. דִּין הוֹשִׁיט אֶת הַיָּד הֲכִי גָּבוֹהַּ שֶׁהוּא יָכוֹל, וְהֶחְזִיק אֶת הַתַּפּוּחַ."}, {"text": "\"קִיוִי,\" קָרָא טוֹם בְּקוֹל רַךְ, כְּמוֹ בַּלַּיְלָה הָרִאשׁוֹן. \"בּוֹא הַבַּיְתָה. יֵשׁ תַּפּוּחַ.\""}, {"text": "קִיוִי הִטָּה אֶת הָרֹאשׁ. הוּא הִסְתַּכֵּל עַל הַתַּפּוּחַ. הוּא הִסְתַּכֵּל עַל טוֹם. הוּא קָפַץ לְעָנָף נָמוּךְ יוֹתֵר, וְעוֹד אֶחָד... וְאָז, פְרְרְרְר! הוּא נָחַת יָשָׁר עַל הַיָּד שֶׁל דִּין, וְהִתְחִיל לֶאֱכֹל."}, {"question": "עַל מָה נָחַת קִיוִי?", "options": ["עַל הַיָּד שֶׁל דִּין", "עַל הָרֹאשׁ שֶׁל טוֹם", "עַל הַשַּׁעַר", "עַל הָאוֹפַנַּיִם"], "answer": 0}, {"text": "\"הוּא עָלַי! הוּא עָלַי!\" לָחַשׁ דִּין, וְלֹא זָז אֲפִילוּ סַנְטִימֶטֶר."}, {"text": "אִמָּא כִּסְּתָה אֶת קִיוִי בַּעֲדִינוּת בַּסְּוֶדֶר שֶׁלָּהּ. \"תָּפַסְנוּ אוֹתוֹ,\" הִיא אָמְרָה, וְהַקּוֹל שֶׁלָּהּ רָעַד קְצָת."}, {"text": "כָּל הַשַּׂחְקָנִים בַּמִּגְרָשׁ מָחֲאוּ כַּפַּיִם. וּמִתּוֹךְ הַסְּוֶדֶר נִשְׁמַע קוֹל עָמוּם: \"גּוֹל!\""}, {"question": "בְּמָה אִמָּא כִּסְּתָה אֶת קִיוִי?", "options": ["בַּסְּוֶדֶר שֶׁלָּהּ", "בְּמַגֶּבֶת", "בַּכּוֹבַע שֶׁל טוֹם", "בַּחֻלְצָה שֶׁל דִּין"], "answer": 0}, {"text": "אֶחָד הַשַּׂחְקָנִים הַגְּדוֹלִים נִגַּשׁ לְטוֹם. \"תָּבִיא אוֹתוֹ בְּשַׁבָּת לַמִּשְׂחָק,\" הוּא אָמַר. \"הוּא יִהְיֶה הַקָּמֵעַ שֶׁלָּנוּ.\""}, {"text": "\"רַק אִם הוּא יִהְיֶה בַּכְּלוּב,\" אָמְרָה אִמָּא מִיָּד, וְכֻלָּם צָחֲקוּ."}]}, {"id": "tuki-8", "title": "טוֹם קָנָה תּוּכִּי 8: שָׁלוֹם, טוֹם!", "theme": "סיפור: טום קנה תוכי, פרק 8 מתוך 8", "steps": [{"text": "כְּשֶׁהֵם חָזְרוּ הַבַּיְתָה, אַבָּא כְּבָר חִכָּה לָהֶם בַּפֶּתַח. \"שָׁמַעְתִּי שֶׁהָיְתָה פֹּה הַרְפַּתְקָה,\" הוּא אָמַר."}, {"text": "קִיוִי חָזַר לַכְּלוּב שֶׁלּוֹ. הוּא שָׁתָה מַיִם, נָקַשׁ פַּעַם אַחַת בַּפַּעֲמוֹן, וְנִרְדַּם עַל הַמּוֹט, עַל רֶגֶל אַחַת."}, {"question": "מָה עָשָׂה קִיוִי כְּשֶׁחָזַר הַבַּיְתָה?", "options": ["שָׁתָה מַיִם וְנִרְדַּם", "צָעַק גּוֹל", "בָּרַח שׁוּב", "אָכַל עוּגָה"], "answer": 0}, {"text": "דִּין עָמַד לְיַד הַכְּלוּב וְהִסְתַּכֵּל עַל הָרִצְפָּה."}, {"text": "\"טוֹם,\" הוּא אָמַר בְּשֶׁקֶט, \"סְלִיחָה. לֹא הִתְכַּוַּנְתִּי. שָׁכַחְתִּי אֶת הַכְּלָל.\""}, {"text": "טוֹם חָשַׁב עַל כָּל הַיּוֹם הַזֶּה: עַל הַפַּחַד, עַל הַבַּקְבּוּק הַיָּרֹק בָּעֵץ, וְעַל הַתַּפּוּחַ שֶׁל דִּין."}, {"text": "\"אַתָּה הִצַּלְתָּ אוֹתוֹ,\" אָמַר טוֹם. \"בְּלִי הַתַּפּוּחַ שֶׁלְּךָ, הוּא עוֹד הָיָה עַל הָעֵץ.\""}, {"text": "\"אָז אַתָּה לֹא כּוֹעֵס?\""}, {"text": "\"קְצָת,\" הוֹדָה טוֹם. \"אֲבָל יוֹתֵר שָׂמֵחַ.\""}, {"question": "מָה טוֹם הִרְגִּישׁ כְּלַפֵּי דִּין בַּסּוֹף?", "options": ["קְצָת כּוֹעֵס, אֲבָל יוֹתֵר שָׂמֵחַ", "כּוֹעֵס מְאֹד", "עָצוּב", "פָּחַד מִמֶּנּוּ"], "answer": 0}, {"text": "הֵם קָבְעוּ בְּיַחַד כְּלָל חָדָשׁ: אֶת הַכְּלוּב פּוֹתְחִים רַק כְּשֶׁטּוֹם בַּבַּיִת. וְאַבָּא תָּלָה רֶשֶׁת עַל הַחַלּוֹן, כְּדֵי שֶׁאִם מִישֶׁהוּ יִשְׁכַּח, קִיוִי לֹא יוּכַל לָצֵאת."}, {"question": "מָה אַבָּא שָׂם עַל הַחַלּוֹן?", "options": ["רֶשֶׁת", "מַגֶּבֶת", "מַנְעוּל", "וִילוֹן"], "answer": 0}, {"text": "מֵאוֹתוֹ יוֹם, דִּין עָזַר לְטוֹם כָּל בֹּקֶר. טוֹם הֶחְלִיף אֶת הַמַּיִם, וְדִין חָתַךְ אֶת הַתַּפּוּחַ. וּשְׁנֵיהֶם יָשְׁבוּ לְיַד הַכְּלוּב וְלִמְּדוּ אֶת קִיוִי מִלִּים."}, {"text": "קִיוִי לָמַד מַהֵר. הוּא לָמַד לְהַגִּיד \"טוֹם\". הוּא לָמַד לְהַגִּיד \"דִּין\". הוּא לָמַד לְהַגִּיד \"תַּפּוּחַ\", אֲבָל זֶה יָצָא \"פּוּחַ\"."}, {"question": "אֵיךְ יָצְאָה לְקִיוִי הַמִּלָּה \"תַּפּוּחַ\"?", "options": ["פּוּחַ", "תַּפּוּ", "פִּיחַ", "תַּפִּי"], "answer": 0}, {"text": "יוֹאָב וְנוֹעָה בָּאוּ לְבַקֵּר כִּמְעַט כָּל יוֹם. נוֹעָה הֵבִיאָה לְקִיוִי פֶּלַח תַּפּוּז, וְיוֹאָב נִסָּה לְלַמֵּד אוֹתוֹ לְהַגִּיד \"יוֹאָב מֶלֶךְ\". קִיוִי הִסְתַּכֵּל עָלָיו וְאָמַר: \"אַפְּצִ'ייי!\""}, {"text": "\"נִרְאֶה לִי שֶׁזֶּה אוֹמֵר לֹא,\" צָחֲקָה נוֹעָה."}, {"text": "וְהוּא עֲדַיִן הִתְעַטֵּשׁ כְּמוֹ אַבָּא, צִלְצֵל כְּמוֹ הַטֶּלֶפוֹן שֶׁל אִמָּא, וְצָעַק \"גּוֹל!\" כָּל פַּעַם שֶׁמִּישֶׁהוּ בָּעַט בְּכַדּוּר."}, {"text": "בְּבֵית הַסֵּפֶר טוֹם סִפֵּר לְכָל הַכִּתָּה עַל הַהַרְפַּתְקָה. הַמּוֹרָה בִּקְּשָׁה שֶׁיִּכְתֹּב עַל זֶה חִבּוּר. טוֹם קָרָא לַחִבּוּר \"טוֹם קָנָה תּוּכִּי\", וְקִבֵּל מְצֻיָּן."}, {"text": "יוֹם אֶחָד, אַחֲרֵי חֹדֶשׁ, טוֹם חָזַר מִבֵּית הַסֵּפֶר. הוּא פָּתַח אֶת הַדֶּלֶת וְזָרַק אֶת הַתִּיק עַל הָרִצְפָּה."}, {"text": "\"שָׁלוֹם, טוֹם!\" אָמַר קוֹל קָטָן מֵהַסָּלוֹן."}, {"text": "טוֹם קָפָא בַּמָּקוֹם. הוּא רָץ לַסָּלוֹן. קִיוִי עָמַד עַל הַמּוֹט וְהִסְתַּכֵּל עָלָיו בְּעַיִן אַחַת, בְּדִיּוּק כְּמוֹ בַּיּוֹם הָרִאשׁוֹן בַּחֲנוּת."}, {"text": "\"שָׁלוֹם, טוֹם!\" אָמַר קִיוִי שׁוּב."}, {"text": "דִּין הֵצִיץ מֵאֲחוֹרֵי הַסַּפָּה וְחִיֵּךְ חִיּוּךְ גָּדוֹל. \"הַפְתָּעָה! לִמַּדְתִּי אוֹתוֹ כָּל הַשָּׁבוּעַ בַּסֵּתֶר!\""}, {"question": "מִי לִמֵּד אֶת קִיוִי לְהַגִּיד \"שָׁלוֹם, טוֹם\"?", "options": ["דִּין", "אִמָּא", "אַבָּא", "יוֹאָב"], "answer": 0}, {"text": "טוֹם צָחַק וְחִבֵּק אֶת אָחִיו הַקָּטָן חָזָק."}, {"text": "\"שָׁלוֹם, קִיוִי,\" הוּא אָמַר. \"בָּרוּךְ הַבָּא הַבַּיְתָה.\""}, {"text": "\"גּוֹל!\" עָנָה קִיוִי."}, {"question": "מָה לָמַדְנוּ מֵהַסִּפּוּר?", "options": ["שֶׁאַחִים יְכוֹלִים לִסְלֹחַ וְלַעֲזֹר זֶה לָזֶה", "שֶׁתּוּכִּים לֹא מְדַבְּרִים", "שֶׁאָסוּר לִקְנוֹת חַיּוֹת", "שֶׁכְּדַאי לִצְעֹק"], "answer": 0}, {"text": "סוֹף."}]}, {"id": "tzidi-1", "title": "צִידִי הַגּוֹלִים 1: חֲלוֹם מַדְלִיק", "theme": "ספר: צידי הגולים, פרק 1 מתוך 8", "start": true, "steps": [{"text": "דָּנִיֵּאל חוֹלֵם, עֵינָיו פְּקוּחוֹת אֲבָל מַחְשְׁבוֹתָיו נוֹדְדוֹת."}, {"text": "גּוּפוֹ בַּכִּתָּה, יָדָיו שְׁעוּנוֹת עַל שֻׁלְחַן הַכְּתִיבָה הַקָּרִיר, רֹאשׁוֹ מֻטֶּה קִמְעָה כְּמַבִּיט אֶל לוּחַ הַכִּתָּה, לְיָדוֹ חֲבֵרוֹ הַטּוֹב עָסוּק בְּמִלּוּי הַשּׁוּרוֹת בְּמַחְבַּרְתּוֹ בְּמֶרֶץ."}, {"text": "בִּפְנֵי הַכִּתָּה, בְּעוֹדָהּ מְהַלֶּכֶת הָלוֹךְ וָשׁוֹב, מְנַסָּה מוֹרָתוֹ, אֲבִיבִית, לְהַסְבִּיר תַּרְגִּיל אָרֹךְ וּפְתַלְתֹּל."}, {"text": "בְּאֵיזֶה תַּרְגִּיל מְדֻבָּר?! אֵין דָּנִיֵּאל מַמָּשׁ יוֹדֵעַ."}, {"text": "מַחְשְׁבוֹתָיו נוֹשְׂאוֹת אוֹתוֹ הַרְחֵק הַרְחֵק אֶל הַמִּשְׂחָק הַגָּדוֹל, אוֹי, הַמִּשְׂחָק הַגָּדוֹל וְהֶחָשׁוּב בְּיוֹתֵר בְּחַיָּיו."}, {"text": "הַמִּשְׂחָק, שֶׁאָמוּר לְהִתְקַיֵּם בְּדִיּוּק בְּעוֹד יוֹמַיִם – הַקְּבוּצָה שֶׁל דָּנִיֵּאל – כִּתָּה ג'3 – כְּנֶגֶד קְבוּצָה מִבֵּית הַסֵּפֶר \"שְׂחָקִים\"."}, {"question": "עַל מָה דָּנִיֵּאל חוֹלֵם בַּכִּתָּה?", "options": ["עַל הַמִּשְׂחָק הַגָּדוֹל", "עַל חֻפְשָׁה בַּיָּם", "עַל עוּגַת שׁוֹקוֹלָד", "עַל הַמּוֹרָה"], "answer": 0}, {"text": "קְבוּצַת \"שְׂחָקִים\" הִיא קְבוּצָה חֲזָקָה."}, {"text": "אֵין דָּנִיֵּאל מֵטִיל סָפֵק בִּיכוֹלוֹתֶיהָ שֶׁל קְבוּצָתָם הַיְּרִיבָה, אַחֶרֶת לֹא הָיְתָה עוֹלָה הַקְּבוּצָה לַגְּמָר, הַגְּמָר שֶׁבּוֹ מִתְחָרִים עַל גָּבִיעַ חָשׁוּב, גָּבִיעַ שֶׁבּוֹ הוּא וַחֲבֵרָיו לַקְּבוּצָה, כָּל כָּךְ חוֹשְׁקִים. כֵּן, זֶהוּ מִשְׂחָק חָשׁוּב מֵאֵין כָּמוֹהוּ וְלָכֵן נוֹתֵן דָּנִיֵּאל דְּרוֹר לְמַחְשְׁבוֹתָיו בְּעוֹדוֹ יוֹשֵׁב בַּכִּתָּה, בְּאֶמְצָעוֹ שֶׁל שִׁעוּר חֶשְׁבּוֹן."}, {"question": "בְּאֵיזֶה שִׁעוּר יוֹשֵׁב דָּנִיֵּאל?", "options": ["חֶשְׁבּוֹן", "אַנְגְּלִית", "סְפּוֹרְט", "מוּזִיקָה"], "answer": 0}, {"text": "הַחֲלוֹם שֶׁל דָּנִיֵּאל כָּל כָּךְ מָתוֹק, הוּא מַמָּשׁ מַרְגִּישׁ אֶת רַגְלָיו נִשָּׂאוֹת בְּרִיצָה עַל הַדֶּשֶׁא הָרַךְ, הוּא חָשׁ בַּזֵּעָה הַנִּגֶּרֶת..."}, {"text": "רוֹנִי בּוֹעֵט אֶת הַכַּדּוּר לְכִוּוּנוֹ שֶׁל דָּנִיֵּאל, דָּנִיֵּאל תּוֹפֵס אֶת הַכַּדּוּר בֵּין רַגְלָיו וּבוֹעֵט חֲזָרָה לְרוֹנִי, הַשְּׁנַיִם מִתְקַדְּמִים בִּמְהִירוּת עֲצוּמָה לְעֵבֶר שַׁעַר הַיְּרִיבִים, דָּנִיֵּאל חָשׁ רַחֲמִים כְּלַפֵּי הַשּׁוֹעֵר מֵהַקְּבוּצָה הַיְּרִיבָה, מִשּׁוּם שֶׁהוּא יוֹדֵעַ שֶׁבְּקָרוֹב הֵם יִכְבְּשׁוּ אֶת הַשַּׁעַר הַמְּיֻחָל."}, {"text": "צַחִי וְיוֹן-יוֹן בְּעֶמְדַּת הַבְּלִימָה, הֵם כְּבָר \"יַאֲכִילוּ\" אֶת שַׂחְקָנֵי הַקְּבוּצָה הַיְּרִיבָה \"קַשׁ\"."}, {"text": "דָּנִיֵּאל יוֹדֵעַ עַד כַּמָּה צַחִי וְיוֹן-יוֹן טוֹבִים בְּתַפְקִידָם עַל הַמִּגְרָשׁ."}, {"text": "עֹמֶר וְיוּבַל תּוֹפְסִים אֶת עֶמְדָּתָם בְּמֶרְכַּז הַמִּגְרָשׁ, פָּשׁוּט תּוֹתָחִים – אֵין זְרִיזִים וַחֲזָקִים מֵהֶם."}, {"text": "רַק תּוֹם, הַשּׁוֹעֵר, עוֹמֵד גַּלְמוּד בַּשַּׁעַר, מְשֻׁעֲמָם."}, {"text": "הָאֱמֶת, בַּחֲלוֹם הַזֶּה, אֵין לְתוֹם הַרְבֵּה מָה לַעֲשׂוֹת, לְשַׂחְקָנֵי הַקְּבוּצָה הַיְּרִיבָה אֵין אֲפִלּוּ סִכּוּי לְהִתְקָרֵב אֶל הַשַּׁעַר..."}, {"question": "מִי הַשּׁוֹעֵר שֶׁל הַקְּבוּצָה?", "options": ["תּוֹם", "רוֹנִי", "יוּבַל", "צַחִי"], "answer": 0}, {"text": "\"דָּנִיֵּאל!\" נִשְׁמַע קוֹלָהּ שֶׁל הַמּוֹרָה אֲבִיבִית, חוֹדֵר מִבַּעַד לְמָסַךְ הַחֲלוֹם. \"דָּנִיֵּאל, שִׂים לֵב! אַתָּה יָכוֹל בְּבַקָּשָׁה לַחֲזֹר עַל הַמִּשְׁפָּט הָאַחֲרוֹן שֶׁלִּי?\""}, {"text": "דָּנִיֵּאל נָע בְּכִסְאוֹ בְּחֹסֶר נוֹחוּת, הוּא לֹא מַמָּשׁ יוֹדֵעַ מָה הָיָה הַמִּשְׁפָּט הָאַחֲרוֹן שֶׁל הַמּוֹרָה."}, {"text": "אוֹי, הַמַּצָּב לֹא נָעִים."}, {"text": "דָּנִיֵּאל מַבִּיט בַּחֲבֵרָיו בִּתְחִנָּה וּמְקַוֶּה שֶׁיַּעֲבִירוּ לוֹ, אֲפִלּוּ בְּטֶלֶפַּתְיָה, אֵיזֶה מֻשָּׂג קָלוּשׁ עַל מָה הָיָה הַמִּשְׁפָּט."}, {"text": "עֹמֶר מְנַסָּה לַעֲזֹר וְלוֹחֶשֶׁת לוֹ מַשֶּׁהוּ, אֲבָל דָּנִיֵּאל לֹא מַמָּשׁ מֵבִין מָה הִיא אוֹמֶרֶת."}, {"question": "לָמָּה הַמַּצָּב שֶׁל דָּנִיֵּאל לֹא נָעִים?", "options": ["כִּי הוּא לֹא שָׁמַע מָה הַמּוֹרָה אָמְרָה", "כִּי הוּא שָׁכַח אֶת הַתִּיק", "כִּי הוּא חוֹלֶה", "כִּי הוּא אִחֵר לַכִּתָּה"], "answer": 0}, {"text": "לְמַזָּלוֹ, בְּעִתּוּי מַדְהִים, נִפְתַּחַת דֶּלֶת הַכִּתָּה וְהַמְּנַהֵל נִכְנָס."}, {"text": "הַמְּנַהֵל אֵינוֹ לְבַד, לְיָדוֹ עוֹמֵד יֶלֶד שֶׁהֵם אֵינָם מַכִּירִים."}, {"text": "הַמְּנַהֵל מְסַפֵּר שֶׁזֶּהוּ תַּלְמִיד חָדָשׁ שֶׁשְּׁמוֹ נְתַנְאֵל."}, {"question": "מִי נִכְנַס לַכִּתָּה עִם הַמְּנַהֵל?", "options": ["תַּלְמִיד חָדָשׁ", "מְאַמֵּן", "אַבָּא שֶׁל דָּנִיֵּאל", "מוֹרָה חֲדָשָׁה"], "answer": 0}, {"text": "\"עַד לֹא מִזְּמַן הוּא גָּר בְּעִיר אַחֶרֶת וְלָאַחֲרוֹנָה עָבַר עִם הוֹרָיו לְכָאן\", מַסְבִּיר הַמְּנַהֵל."}, {"text": "\"אָמַרְתִּי לוֹ שֶׁהוּא הִגִּיעַ לַכִּתָּה הֲכִי מַקְסִימָה בְּבֵית הַסֵּפֶר\", סִפֵּר הַמְּנַהֵל, קָרַץ, צָחַק וְיָצָא מִן הַכִּתָּה."}, {"text": "נְתַנְאֵל הִבִּיט בְּיַלְדֵי הַכִּתָּה בְּעוֹד הֵם בָּהוּ בּוֹ בְּסַקְרָנוּת."}, {"text": "הַמּוֹרָה אֲבִיבִית הֵנִיחָה בַּחֲבִיבוּת אֶת יָדָהּ עַל כְּתֵפוֹ וּבֵרְכָה אוֹתוֹ בְּבִרְכַּת בָּרוּךְ הַבָּא לְכִתָּה ג'3."}, {"text": "הִיא רָכְנָה אֵלָיו וְלָחֲשָׁה בְּאָזְנוֹ שֶׁאֵין לָהּ שׁוּם סָפֵק שֶׁתּוֹךְ זְמַן קָצָר הוּא יִשְׁתַּלֵּב בַּכִּתָּה."}, {"text": "בְּרֶגַע זֶה נִשְׁמַע צִלְצוּל פַּעֲמוֹן בֵּית הַסֵּפֶר, צִלְצוּל שֶׁסִּמֵּן אֶת סִיּוּם הַשִּׁעוּר וְתַלְמִידֵי הַכִּתָּה פָּרְצוּ בִּצְוָחוֹת חֶדְוָה לְעֵבֶר מִגְרַשׁ הַמִּשְׂחָקִים אֲשֶׁר בְּרַחֲבַת בֵּית הַסֵּפֶר."}, {"question": "לְאָן רָצוּ הַתַּלְמִידִים כְּשֶׁצִּלְצֵל הַפַּעֲמוֹן?", "options": ["לְמִגְרַשׁ הַמִּשְׂחָקִים", "הַבַּיְתָה", "לַסִּפְרִיָּה", "לַחֲדַר הַמְּנַהֵל"], "answer": 0}]}, {"id": "tzidi-2", "title": "צִידִי הַגּוֹלִים 2: אֵיפֹה לְכָל הַשֵּׁדִים זֶה טוֹרוֹנְטוֹ?", "theme": "ספר: צידי הגולים, פרק 2 מתוך 8", "steps": [{"text": "בַּהַפְסָקָה, בָּרְחָבָה שֶׁל בֵּית הַסֵּפֶר, נְתַנְאֵל בּוֹחֵן אֶת חֲבֵרָיו הַחֲדָשִׁים."}, {"text": "גַּם הַתַּלְמִידִים הַוָּתִיקִים מְנַסִּים לִתְהוֹת עַל קַנְקַנּוֹ שֶׁל הַתַּלְמִיד הֶחָדָשׁ."}, {"text": "בְּתִסְפָּרְתּוֹ הָעַכְשָׁוִית, בַּעֲמִידָתוֹ הַנִּנּוֹחָה וְהַבּוֹטַחַת, נְתַנְאֵל כְּבָר מַמָּשׁ לֹא נִרְאֶה בַּיְשָׁן."}, {"text": "\"מֵהֵיכָן אַתָּה בָּא?\" שׁוֹאֵל רוֹנִי."}, {"text": "\"מֵהַבַּיִת\", עוֹנֶה לוֹ נְתַנְאֵל."}, {"question": "מָה עָנָה נְתַנְאֵל כְּשֶׁשָּׁאֲלוּ אוֹתוֹ מֵהֵיכָן הוּא בָּא?", "options": ["מֵהַבַּיִת", "מִטּוֹרוֹנְטוֹ", "מִלּוֹנְדוֹן", "מֵהַיָּם"], "answer": 0}, {"text": "יוֹן-יוֹן צוֹחֵק, לֶחָדָשׁ יֵשׁ חוּשׁ הוּמוֹר וְזֶה מוֹצֵא חֵן בְּעֵינָיו."}, {"text": "\"אֲנִי מִתְכַּוֵּן, אֵיפֹה הִתְגּוֹרַרְתָּ לִפְנֵי שֶׁהִגַּעְתָּ לְכָאן?\" מַמְשִׁיךְ רוֹנִי בְּנִסְיוֹנוֹתָיו."}, {"text": "נְתַנְאֵל נוֹתֵן מַבָּט מְשֻׁעֲמָם בְּרוֹנִי."}, {"text": "\"אוֹח... פַּעַם כָּאן, פַּעַם שָׁם\", הוּא מֵשִׁיב, \"נוֹלַדְתִּי בְּטוֹרוֹנְטוֹ, וְגַרְנוּ בְּתֵל-אָבִיב, בְּאֵילַת בְּרוֹמָא, וְגַם מִסְפַּר שָׁנִים בְּלוֹנְדוֹן\", הוּא מְסַפֵּר."}, {"text": "כֻּלָּם מַבִּיטִים בּוֹ בִּפְלִיאָה."}, {"text": "כָּל כָּךְ הַרְבֵּה מְקוֹמוֹת הֵם אֲפִלּוּ לֹא רָאוּ בַּחֻפְשׁוֹת שֶׁלָּהֶם."}, {"text": "דָּנִיֵּאל שׁוֹאֵל: \"אֵיפֹה זֶה טוֹרוֹנְטוֹ?\""}, {"text": "\"בְּקָנָדָה\", לוֹחֶשֶׁת עֹמֶר. \"זֶה יָדוּעַ\", הִיא מוֹסִיפָה."}, {"question": "בְּאֵיזוֹ מְדִינָה נִמְצֵאת טוֹרוֹנְטוֹ?", "options": ["קָנָדָה", "אַנְגְּלִיָּה", "אִיטַלְיָה", "יִשְׂרָאֵל"], "answer": 0}, {"text": "\"לֹא, זֶה לֹא\", זוֹעֵף דָּנִיֵּאל, \"וְזֶה גַּם לֹא חָשׁוּב בִּכְלָל\"."}, {"text": "הוּא הָיָה מַעֲדִיף לְשַׂחֵק כַּדּוּרֶגֶל בִּמְקוֹם לִשְׁמֹעַ אֶת הַסִּפּוּרִים הָאֵלֶּה."}, {"text": "אֲבָל שְׁאָר הַחֲבֵרִים מִתְלַהֲבִים וּמִתְעַנְיְנִים כָּרֶגַע בִּנְתַנְאֵל יוֹתֵר מֵאֲשֶׁר בְּמִשְׂחַק הַכַּדּוּרֶגֶל הַמִּתְקָרֵב."}, {"question": "מָה דָּנִיֵּאל הָיָה מַעֲדִיף לַעֲשׂוֹת?", "options": ["לְשַׂחֵק כַּדּוּרֶגֶל", "לִשְׁמֹעַ עוֹד סִפּוּרִים", "לִלְעֹס מַסְטִיק", "לִלְמֹד חֶשְׁבּוֹן"], "answer": 0}, {"text": "נְתַנְאֵל מַשְׁלִיךְ בְּקוֹלִיּוּת מַסְטִיקִים לְעֵבֶר כֻּלָּם."}, {"text": "\"שָׁמַעְתִּי שֶׁאַתֶּם חֲבוּרַת כַּדּוּרַגְלָנִים\", הוּא אוֹמֵר בְּעוֹדוֹ לוֹעֵס מַסְטִיק וָרֹד וּמָתוֹק."}, {"text": "\"שָׁמַעְתָּ נָכוֹן\", מְמַצְמֵץ יוּבַל בִּשְׂפָתָיו, \"אֲנַחְנוּ קְבוּצָה תּוֹתָחִית!\""}, {"text": "\"מָחֳרָתַיִם אֲנַחְנוּ נִזְכֶּה בְּגָבִיעַ בֵּית הַסֵּפֶר, אָז נוֹכִיחַ לְכֻלָּם עַד כַּמָּה שֶׁאֲנַחְנוּ טוֹבִים!\" פּוֹסֵק בְּהֶחְלֵטִיּוּת יוּבַל."}, {"text": "כֻּלָּם נִרְגָּשִׁים לִקְרַאת הַמִּשְׂחָק וּמְצַפִּים לוֹ מְאֹד."}, {"question": "מָתַי הַקְּבוּצָה רוֹצָה לִזְכּוֹת בַּגָּבִיעַ?", "options": ["מָחֳרָתַיִם", "הַיּוֹם", "מָחָר", "בְּעוֹד שָׁנָה"], "answer": 0}, {"text": "\"גַּם אֲנִי בָּעִנְיָן\", אוֹמֵר נְתַנְאֵל, \"אֲנִי מְשַׂחֵק כַּדּוּרֶגֶל טוֹב מְאֹד, אֲנִי מְשַׂחֵק כְּבָר דֵּי הַרְבֵּה זְמַן. מִי שֶׁלּוֹמֵד כַּדּוּרֶגֶל בְּאַנְגְּלִיָּה, מֻכְרָח לִהְיוֹת שַׂחְקָן טוֹב\", הוּא מַסְבִּיר."}, {"text": "\"מָתַי הָאִמּוּן הַבָּא?\" הוּא שׁוֹאֵל."}, {"text": "\"הַיּוֹם\", עוֹנֶה צַחִי, מֻפְתָּע, \"בְּשָׁלֹשׁ, בְּמִגְרַשׁ הַסְּפּוֹרְט\"."}, {"question": "מָתַי וְאֵיפֹה הָאִמּוּן?", "options": ["הַיּוֹם בְּשָׁלֹשׁ בְּמִגְרַשׁ הַסְּפּוֹרְט", "מָחָר בַּבֹּקֶר בַּכִּתָּה", "הַיּוֹם בְּחָמֵשׁ בַּפַּארְק", "מָחֳרָתַיִם בְּבֵית הַסֵּפֶר"], "answer": 0}, {"text": "\"סָגַרְנוּ!\" נְתַנְאֵל צוֹחֵק."}, {"text": "\"דֶּרֶךְ אַגַּב, הַחֲבֵרִים שֶׁלִּי קוֹרְאִים לִי נָתִי\", מַסְבִּיר נְתַנְאֵל לַחֲבֵרָיו הַחֲדָשִׁים."}, {"text": "\"אָז יַאלְלָה נִתְרָאֶה מְאֻחָר יוֹתֵר בָּאִמּוּן!\" אוֹמֵר נָתִי וּמִתְרַחֵק בְּעוֹדוֹ שׁוֹרֵק מַנְגִּינָה מִבֵּין שְׂפָתָיו."}, {"question": "אֵיךְ הַחֲבֵרִים שֶׁל נְתַנְאֵל קוֹרְאִים לוֹ?", "options": ["נָתִי", "נָתָן", "אֵלִי", "תּוֹם"], "answer": 0}]}, {"id": "tzidi-3", "title": "צִידִי הַגּוֹלִים 3: נַעֲלֵי הַכַּדּוּרֶגֶל הַטּוֹבוֹת בְּיוֹתֵר", "theme": "ספר: צידי הגולים, פרק 3 מתוך 8", "steps": [{"text": "\"הַחֲבֵרִים שֶׁלִּי קוֹרְאִים לִי נָתִי!\" חִקָּה אוֹתוֹ דָּנִיֵּאל בְּעוֹדוֹ שׂוֹרֵךְ אֶת שְׂרוֹכֵי נַעֲלֵי קַט הָרֶגֶל שֶׁעַל רַגְלָיו, \"וְנוֹלַדְתִּי בְּטוֹוֹוֹרוֹנְטוֹוֹוֹ...\", הוּא לוֹעֵג וּמְקַמֵּט אֶת אַפּוֹ."}, {"text": "תּוֹם, בְּעוֹדוֹ לוֹבֵשׁ אֶת חֻלְצַת הַקְּבוּצָה, אוֹמֵר לְדָנִיֵּאל – \"נוּ, תַּרְגִּיעַ כְּבָר, הֲרֵי זֶה לֹא בְּדִיּוּק קַל לִהְיוֹת הֶחָדָשׁ שֶׁל הַכִּתָּה וּלְנַסּוֹת לְהִשְׁתַּלֵּב בִּזְמַן שֶׁכֻּלָּם מַכִּירִים אֶחָד אֶת הַשֵּׁנִי כְּבָר מִזְּמַן. אָז חַיָּבִים קְצָת לְהַשְׁוִיץ, כְּדֵי שֶׁהָאֲחֵרִים יֵדְעוּ מִי אַתָּה\", הוּא מַסְבִּיר."}, {"question": "מָה עוֹשֶׂה דָּנִיֵּאל כְּשֶׁהוּא מְחַקֶּה אֶת נָתִי?", "options": ["לוֹעֵג לוֹ", "מְחַבֵּק אוֹתוֹ", "מְשַׁבֵּחַ אוֹתוֹ", "שׁוֹאֵל אוֹתוֹ שְׁאֵלָה"], "answer": 0}, {"text": "\"בֶּאֱמֶת חַיָּבִים?\" שׁוֹאֵל יוּבַל."}, {"text": "אָבִי, הַמְּאַמֵּן, עוֹמֵד בַּצַּד וּמַאֲזִין לְשִׂיחָתָם."}, {"question": "מִי זֶה אָבִי?", "options": ["הַמְּאַמֵּן", "הַשּׁוֹעֵר", "הַמְּנַהֵל", "הַשּׁוֹפֵט"], "answer": 0}, {"text": "הַשָּׁעָה קְצָת לִפְנֵי שָׁלֹשׁ, כֻּלָּם הִתְאַסְּפוּ כְּבָר, רַק הֶחָדָשׁ עֲדַיִן לֹא הִגִּיעַ."}, {"text": "\"הוּא בֶּטַח כְּבָר שָׁכַח מִזֶּה\", אוֹמֵר רוֹנִי."}, {"text": "\"עָדִיף כָּךְ\", רוֹטֵן דָּנִיֵּאל, \"הוּא סְתָם שְׁוִיצֶר\"."}, {"text": "\"אַתָּה מַגְזִים, אַתָּה בִּכְלָל לֹא מַכִּיר אוֹתוֹ\", אוֹמֶרֶת עֹמֶר."}, {"question": "מָה אוֹמֶרֶת עֹמֶר לְדָנִיֵּאל?", "options": ["שֶׁהוּא מַגְזִים", "שֶׁהוּא צוֹדֵק", "שֶׁהוּא שׁוֹעֵר טוֹב", "שֶׁהִיא רְעֵבָה"], "answer": 0}, {"text": "לְפֶתַע נְתַנְאֵל מֵגִיחַ מֵאֲחוֹרֵיהֶם, הוּא לוֹבֵשׁ חֻלְצַת כַּדּוּרֶגֶל מְהַמֶּמֶת: חֻלְצָה צְהֻבָּה עִם פַּסִּים שְׁחֹרִים, עַל הַגַּב מֻטְבַּעַת הַסִּפְרָה 7, בְּדִיּוּק כְּמוֹ שֶׁל דֵּיוִיד בֶּקְהֶם."}, {"question": "אֵיזֶה מִסְפָּר יֵשׁ עַל הַחֻלְצָה שֶׁל נָתִי?", "options": ["7", "10", "1", "9"], "answer": 0}, {"text": "גַּם נַעֲלֵי הַכַּדּוּרֶגֶל שֶׁעַל רַגְלָיו הֵן מֵהַטּוֹבוֹת בְּיוֹתֵר, אֶת זֶה רוֹאִים מִמַּבָּט רִאשׁוֹן."}, {"text": "\"אֲנִי מְאַחֵר?\" הוּא שׁוֹאֵל בְּעוֹדוֹ מְחַיֵּךְ בִּלְבָבִיּוּת."}, {"text": "\"לֹא, הִגַּעְתָּ בְּדִיּוּק בַּזְּמַן\", הוּא נַעֲנֶה."}, {"text": "אָבִי הַמְּאַמֵּן מַרְגִּישׁ שֶׁהוּא חַיָּב לְבָרֵר אֶת הָעִנְיָן, הוּא חַיָּב לָדַעַת מַה נָּכוֹן וּמַה לֹּא, הוּא חַיָּב לְגַלּוֹת עַד כַּמָּה נְתַנְאֵל בֶּאֱמֶת יוֹדֵעַ לְשַׂחֵק."}, {"text": "\"אֲנַחְנוּ מַתְחִילִים עַכְשָׁו\", הוּא מַכְרִיז, \"וְאַתָּה פָּשׁוּט תִּצְטָרֵף אֵלֵינוּ לָאִמּוּן כְּדֵי שֶׁנּוּכַל לִבְדֹּק אִם אַתָּה מַתְאִים לַקְּבוּצָה אוֹ לֹא\", הוּא מַסְבִּיר לִנְתַנְאֵל."}, {"text": "אָבִי זוֹרֵק אֶת הַכַּדּוּר לְמֶרְכַּז הַמִּגְרָשׁ."}, {"text": "דָּנִיֵּאל תּוֹפֵס אֶת הַכַּדּוּר וּבוֹעֵט בְּעִיטָה עַצְבָּנִית, שֶׁשּׁוֹלַחַת אֶת הַכַּדּוּר הַרְחֵק אֶל מֵעֵבֶר לַמִּגְרָשׁ, יָשָׁר לְתוֹךְ הַשַּׁעַר הַפָּתוּחַ."}, {"text": "\"יָפֶה מְאֹד\", מְמַלְמֵל אָבִי."}, {"question": "לְאָן הִגִּיעַ הַכַּדּוּר שֶׁבָּעַט דָּנִיֵּאל?", "options": ["לְתוֹךְ הַשַּׁעַר", "לַחַלּוֹן", "לַגָּדֵר", "לַיָּדַיִם שֶׁל תּוֹם"], "answer": 0}]}, {"id": "tzidi-4", "title": "צִידִי הַגּוֹלִים 4: פְּרוֹפֶסוֹר כָּל-יוֹדֵעַ", "theme": "ספר: צידי הגולים, פרק 4 מתוך 8", "steps": [{"text": "אָבִי הַמְּאַמֵּן מַכִּיר אֶת הַחֲבוּרָה שֶׁלּוֹ טוֹב מְאֹד."}, {"text": "הוּא לֹא רַק הַדּוֹד שֶׁל תּוֹם, הוּא הַמְּאַמֵּן שֶׁל הַהֶרְכֵּב כְּבָר זְמַן לֹא קָצָר."}, {"text": "הוּא יוֹדֵעַ בְּדִיּוּק מָה הֵן נְקֻדּוֹת הַחֹזֶק שֶׁלָּהֶם וּמָה הֵן נְקֻדּוֹת הַחֻלְשָׁה: כָּל אֶחָד מֵהֶם כְּשֶׁהוּא לְבַד הוּא דֵּי טוֹב, אַךְ שִׁתּוּף הַפְּעֻלָּה בֵּינֵיהֶם זָקוּק לְשִׁפּוּר וְאֶת זֶה הוּא רוֹצֶה לְתַרְגֵּל הַיּוֹם."}, {"question": "מָה אָבִי רוֹצֶה לְתַרְגֵּל הַיּוֹם?", "options": ["לְשַׂחֵק בְּיַחַד וְלִמְסֹר", "לָרוּץ מַהֵר", "לִבְעֹט חָזָק", "לַעֲמֹד בַּשַּׁעַר"], "answer": 0}, {"text": "\"קָדִימָה יוֹן-יוֹן, לַמֶּרְכָּז! וְתִמְסֹר לַחֲבֵרִים שֶׁלְּךָ – שׁוֹמֵעַ? לִ מְ סֹ ר!!!\" הוּא מְבַקֵּשׁ."}, {"text": "עֹמֶר פְּנוּיָה, וְיוֹן-יוֹן מוֹסֵר לָהּ."}, {"text": "עֹמֶר תּוֹפֶסֶת בְּרַגְלֶיהָ אֶת הַכַּדּוּר וְיוֹצֵאת עִמּוֹ בְּרִיצָה קָדִימָה."}, {"text": "רוֹנִי חוֹסֵם אֶת דַּרְכָּהּ."}, {"text": "אָבִי מוֹרֶה לָהּ לְהַעֲבִיר אֶת הַכַּדּוּר לְצַחִי: \"לְצַחִי, תִּמְסְרִי כְּבָר לְצַחִי!\""}, {"text": "אָבִי רָץ יַחַד אִתָּם, הוּא לְגַמְרֵי בָּעִנְיָן."}, {"text": "עֹמֶר בּוֹעֶטֶת אֶת הַכַּדּוּר לְצַחִי, צַחִי כְּבָר מַמְתִּין בַּהֲגַנָּה הַיְמָנִית."}, {"question": "לְמִי עֹמֶר בּוֹעֶטֶת אֶת הַכַּדּוּר?", "options": ["לְצַחִי", "לְרוֹנִי", "לְתוֹם", "לְאָבִי"], "answer": 0}, {"text": "אֲבָל אָז, לְפֶתַע, נְתַנְאֵל נִכְנָס לַמִּשְׂחָק וְעוֹצֵר אֶת הַכַּדּוּר בְּחָזֵהוּ, הוּא מַקְפִּיץ וּמַרְקִיד אֶת הַכַּדּוּר עַל בִּרְכָּיו, וְאָז בִּתְנוּעָה קַלִּילָה הוּא מְאַזֵּן אֶת הַכַּדּוּר עַל רֹאשׁוֹ וְשׁוּב עַל הַבִּרְכַּיִם..."}, {"text": "\"מָה אַתָּה עוֹשֶׂה?!\" שׁוֹאֵל אָבִי בִּתְמִיהָה, \"תִּמְסֹר כְּבָר לְיוּבַל, קָדִימָה, זוּז!\""}, {"text": "אֲבָל נְתַנְאֵל בִּכְלָל לֹא חוֹשֵׁב לַעֲשׂוֹת זֹאת, הוּא מְכַדְרֵר אֶת הַכַּדּוּר, בּוֹעֵט בּוֹ, מְנִיפוֹ מַעְלָה בְּעֶזְרַת רַגְלָיו, מְשַׂחֵק בּוֹ כְּמוֹ חָתוּל בְּעַכְבָּר, וְאָז הוּא בּוֹעֵט אֶת הַכַּדּוּר בְּכָל הַכֹּחַ, הַיְשֵׁר לַשַּׁעַר."}, {"text": "\"וָואוּ אֵיזוֹ בְּעִיטָה אַדִּירָה וּמְדֻיֶּקֶת, כָּל הַכָּבוֹד!\" מַחְמִיאִים לוֹ שַׂחְקָנֵי הַקְּבוּצָה."}, {"question": "מָה עָשָׂה נָתִי בִּמְקוֹם לִמְסֹר לְיוּבַל?", "options": ["בָּעַט לְבַד לַשַּׁעַר", "מָסַר לְעֹמֶר", "יָצָא מֵהַמִּגְרָשׁ", "תָּפַס בַּיָּדַיִם"], "answer": 0}, {"text": "\"יָפֶה מְאֹד!\" מְאַשֵּׁר אָבִי הַמְּאַמֵּן, \"שִׂחַקְתָּ אוֹתָהּ. עַכְשָׁו עָלֵינוּ לַחֲזֹר וּלְשַׂחֵק בְּיַחַד, כִּי כַּדּוּרֶגֶל הוּא סְפּוֹרְט קְבוּצָתִי, נָכוֹן?\""}, {"text": "נָתִי מֵעִיף בִּנְשִׁיפָה תַּלְתַּל מִמִּצְחוֹ: \"הָאִמּוּן שֶׁלָּכֶם מְשַׁעֲמֵם, כָּךְ לֹא תִּזְכּוּ אֲפִלּוּ בְּסֻכָּרִיָּה עַל מַקֵּל, תַּאֲמִינוּ לִי, אֲנִי שִׂחַקְתִּי כְּבָר בְּלֹא מְעַט קְבוּצוֹת, אֲנִי יוֹדֵעַ עַל מָה אֲנִי מְדַבֵּר\"."}, {"question": "מָה נָתִי חוֹשֵׁב עַל הָאִמּוּן?", "options": ["שֶׁהוּא מְשַׁעֲמֵם", "שֶׁהוּא מְצֻיָּן", "שֶׁהוּא קָשֶׁה מִדַּי", "שֶׁהוּא מַצְחִיק"], "answer": 0}, {"text": "אָבִי לוֹקֵחַ נְשִׁימָה עֲמֻקָּה."}, {"text": "דָּנִיֵּאל מְמַלְמֵל: \"מָה אַתָּה שָׂח, פְּרוֹפֶסוֹר אֲנִי כָּל-יוֹדֵעַ?!\""}, {"question": "לָמָּה דָּנִיֵּאל קוֹרֵא לְנָתִי \"פְּרוֹפֶסוֹר כָּל-יוֹדֵעַ\"?", "options": ["כִּי נָתִי מִתְנַהֵג כְּאִלּוּ הוּא יוֹדֵעַ הַכֹּל", "כִּי נָתִי מוֹרֶה", "כִּי נָתִי מַרְכִּיב מִשְׁקָפַיִם", "כִּי נָתִי לוֹמֵד הַרְבֵּה"], "answer": 0}, {"text": "\"אֲנַחְנוּ נַעֲשֶׂה אֶת זֶה אֵיךְ שֶׁאָבִי יַגִּיד לָנוּ\", מַעֲמִידָה אוֹתוֹ עֹמֶר בַּמָּקוֹם."}, {"text": "נָתִי מוֹשֵׁךְ בִּכְתֵפָיו, \"אוֹ-קֵיי, זוֹ הָיְתָה רַק עֵצָה יְדִידוּתִית, הֲרֵי בְּסַךְ הַכֹּל אֲנַחְנוּ רוֹצִים לִזְכּוֹת\"."}, {"text": "\"אֲנַחְנוּ?\" שׁוֹאֵל צַחִי בְּשֶׁקֶט."}, {"text": "\"אֲבָל בְּצוּרָה כָּזוֹ אֵין סִכּוּי שֶׁנַּצְלִיחַ\", הוּא מַסְבִּיר."}, {"text": "נָתִי דּוֹחֵף בְּבוּז אֶת הַכַּדּוּר הַצִּדָּה, הוּא חוֹטֵף אֶת תִּיק הַסְּפּוֹרְט שֶׁלּוֹ, קוֹפֵץ עַל אוֹפַנָּיו וְנוֹסֵעַ לְדַרְכּוֹ."}, {"text": "כֻּלָּם מַבִּיטִים בּוֹ בְּעוֹדוֹ מִתְרַחֵק."}, {"text": "\"מָה זֶה הָיָה צָרִיךְ לִהְיוֹת?\" שׁוֹאֵל רוֹנִי."}, {"text": "\"יֶלֶד מוּזָר\", לוֹחֵשׁ אָבִי הַמְּאַמֵּן, \"אוּלַי תְּדַבְּרוּ אִתּוֹ מָחָר?\" הוּא מַצִּיעַ."}, {"text": "כֵּן, זֶה מַה שֶּׁהֵם יַעֲשׂוּ מָחָר בְּבֵית הַסֵּפֶר, הֵם יְנַהֲלוּ עִמּוֹ שִׂיחָה רְצִינִית, אֲבָל מָה הֵם יַגִּידוּ לוֹ?"}, {"question": "מָה עָשָׂה נָתִי בְּסוֹף הָאִמּוּן?", "options": ["נָסַע הַבַּיְתָה עַל הָאוֹפַנַּיִם", "נִשְׁאַר לְהִתְאַמֵּן", "הִתְנַצֵּל", "עָמַד בַּשַּׁעַר"], "answer": 0}]}, {"id": "tzidi-5", "title": "צִידִי הַגּוֹלִים 5: מְסִבַּת הַכַּדּוּרֶגֶל", "theme": "ספר: צידי הגולים, פרק 5 מתוך 8", "steps": [{"text": "\"אוּלַי נַגִּיד לוֹ שֶׁהוּא פָּשׁוּט לֹא מַתְאִים לַקְּבוּצָה שֶׁלָּנוּ?\" שׁוֹאֵל דָּנִיֵּאל."}, {"text": "\"כֵּן, פָּשׁוּט מְאֹד\", מְחַזֵּק אוֹתוֹ יוּבַל."}, {"text": "הֵם קָבְעוּ לְהִפָּגֵשׁ לִפְנֵי תְּחִלַּת הַשִּׁעוּר כְּדֵי לָדוּן בָּעִנְיָן, הֲרֵי זֶהוּ עִנְיָן מְאֹד חָשׁוּב."}, {"text": "הַמַּצָּב דּוֹרֵשׁ הַבְהָרָה מִיָּדִית, בְּכָךְ אָבִי הַמְּאַמֵּן צוֹדֵק."}, {"question": "לָמָּה הַחֲבֵרִים נִפְגָּשִׁים לִפְנֵי הַשִּׁעוּר?", "options": ["כְּדֵי לְדַבֵּר עַל נָתִי", "כְּדֵי לְהִתְאַמֵּן", "כְּדֵי לֶאֱכֹל", "כְּדֵי לְהָכִין שִׁעוּרֵי בַּיִת"], "answer": 0}, {"text": "\"אוּלַי נוּכַל לָתֵת לוֹ עוֹד הִזְדַּמְּנוּת?\" נִסָּה צַחִי בִּזְהִירוּת."}, {"text": "\"גַּם אֲנִי חוֹשֶׁבֶת שֶׁאוּלַי כְּדַאי לְנַסּוֹת\", אָמְרָה עֹמֶר, \"כִּי נִרְאֶה שֶׁלְּשַׂחֵק כַּדּוּרֶגֶל הוּא דַּוְקָא יוֹדֵעַ\"."}, {"question": "מִי רוֹצִים לָתֵת לְנָתִי עוֹד הִזְדַּמְּנוּת?", "options": ["צַחִי וְעֹמֶר", "דָּנִיֵּאל וְיוּבַל", "רַק אָבִי", "אַף אֶחָד"], "answer": 0}, {"text": "בְּרֶגַע זֶה נָתִי פּוֹרֵץ לַכִּתָּה, תַּלְתַּלָּיו הַשְּׁחֹרִים בְּעִקְבוֹתָיו, מִתַּחַת לִזְרוֹעוֹ הוּא מַחֲזִיק כַּדּוּר, כַּדּוּר חָדָשׁ, מַבְרִיק וּמְנֻפָּח עַד לְהִתְפּוֹצֵץ."}, {"text": "\"הִנֵּה מַתָּנָה קְטַנָּה לַקְּבוּצָה\", הוּא אוֹמֵר בְּגַאֲוָה."}, {"question": "מָה נָתִי מֵבִיא לַקְּבוּצָה?", "options": ["כַּדּוּר חָדָשׁ", "נַעֲלַיִם", "חֻלְצוֹת", "גָּבִיעַ"], "answer": 0}, {"text": "\"וָואוּ!\" מִתְלַהֵב רוֹנִי, \"אֵיזֶה כַּדּוּר פְּצָצָה! תּוֹדָה\"."}, {"text": "\"אֵין בְּעַד מָה\", עוֹנֶה נָתִי."}, {"text": "\"דֶּרֶךְ אַגַּב, רָצִיתִי לְהַזְמִין אֶתְכֶם לִמְסִבַּת כַּדּוּרֶגֶל הַיּוֹם אַחַר הַצָּהֳרַיִם, אֶצְלִי בַּבַּיִת. נִצְפֶּה בְּכַמָּה סְרָטִים שֶׁל הָאַלִּיפוּת הָאַחֲרוֹנָה, וְאָז נְשַׂחֵק בַּמַּחְשֵׁב, שָׁם אֶפְשָׁר לִלְמֹד טַקְטִיקוֹת טוֹב יוֹתֵר מֵאֲשֶׁר עַל הַמִּגְרָשׁ, אִמָּא שֶׁלִּי אִרְגְּנָה חֲטִיפִים וּשְׁתִיָּה וּבְמַהֲלַךְ הָעֶרֶב נַזְמִין הַמְבּוּרְגֶּרִים לְכֻלָּם, אוֹ-קֵיי?\""}, {"question": "מָה יַעֲשׂוּ בַּמְּסִבָּה?", "options": ["יִצְפּוּ בִּסְרָטִים שֶׁל כַּדּוּרֶגֶל", "יִשְׂחוּ בַּבְּרֵכָה", "יֵצְאוּ לְטִיּוּל", "יְצַיְּרוּ"], "answer": 0}, {"text": "\"מַ גְ נִ י ב!\" מִתְלַהֵב תּוֹם, \"עִם צִ'יפְּס וּמָלֵא רְטָבִים?\""}, {"text": "\"עִם מַה שֶּׁאַתֶּם רוֹצִים\", צוֹחֵק נָתִי."}, {"text": "רוֹנִי וְיוֹן-יוֹן מְהַנְהֲנִים, \"נִשְׁמָע נֶחְמָד, לֹא?\""}, {"text": "\"אֲנִי בָּעִנְיָן\", עוֹנֶה צַחִי."}, {"text": "\"אֲנִי לֹא אוֹהֶבֶת הַמְבּוּרְגֶּר\", מְמַלְמֶלֶת עֹמֶר."}, {"text": "יוּבַל וְדָנִיֵּאל מַבִּיטִים זֶה בָּזֶה."}, {"text": "\"לֹא, תּוֹדָה!\" מַחְלִיט דָּנִיֵּאל."}, {"question": "מִי אָמַר \"לֹא, תּוֹדָה!\"?", "options": ["דָּנִיֵּאל", "תּוֹם", "צַחִי", "רוֹנִי"], "answer": 0}, {"text": "יוּבַל מֵנִיד בְּרֹאשׁוֹ לִשְׁלִילָה."}, {"text": "\"אֵיךְ שֶׁבָּא לָכֶם!\" עוֹנֶה נָתִי."}, {"text": "\"אֲבָל אִם תִּתְחָרְטוּ אַתֶּם יְכוֹלִים לְהִצְטָרֵף אֵלֵינוּ\"."}, {"text": "\"כְּדַאי לָכֶם לָבוֹא! אַחֶרֶת אֲנַחְנוּ נְטַפֵּל בַּמָּנוֹת שֶׁלָּכֶם!\" מְאַיֵּם יוֹן-יוֹן."}]}, {"id": "tzidi-6", "title": "צִידִי הַגּוֹלִים 6: יוֹם נִשּׂוּאִין", "theme": "ספר: צידי הגולים, פרק 6 מתוך 8", "steps": [{"text": "אַחַר הַצָּהֳרַיִם, יוּבַל, עֹמֶר וְדָנִיֵּאל נִפְגָּשִׁים בַּמִּגְרָשׁ, מַצַּב רוּחָם עַל הַפָּנִים, כָּךְ גַּם מֶזֶג הָאֲוִיר."}, {"text": "עַנְנֵי גֶּשֶׁם כְּבֵדִים נִשָּׂאִים מֵעֲלֵיהֶם, הַשָּׁמַיִם קוֹדְרִים וּכְבֵדִים, בְּדִיּוּק כְּמוֹ מַחְשְׁבוֹתָיו שֶׁל דָּנִיֵּאל."}, {"question": "אֵיךְ מֶזֶג הָאֲוִיר?", "options": ["קוֹדֵר וּמְעֻנָּן", "שִׁמְשִׁי וְחַם", "יוֹרֵד שֶׁלֶג", "נוֹשֶׁבֶת רוּחַ חַמָּה"], "answer": 0}, {"text": "\"בּוֹגְדִים!\" הוּא כּוֹעֵס, \"יוֹשְׁבִים לָהֶם שָׁם עַכְשָׁו מוּל הַטֶּלֶוִיזְיָה, בִּמְקוֹם לְהִתְאַמֵּן\"."}, {"text": "\"אוּלַי הֵם צוֹדְקִים\", מֵשִׁיב יוּבַל בְּעוֹדוֹ נוֹשֵׂא מַבָּטוֹ מַעְלָה אֶל הַשָּׁמַיִם הָאֲפֹרִים."}, {"text": "\"וְכָל זֶה רַק בִּגְלַל הַשַּׁחְצָן הַזֶּה\", נֶאֱנַח דָּנִיֵּאל, \"עִם הַחֻלְצָה שֶׁלּוֹ הוּא נִרְאֶה כְּמוֹ אֵיזוֹ צִרְעָה וּכְאִלּוּ זֶה לֹא מַסְפִּיק – אָז גַּם מוֹפִיעַ לוֹ עַל הַחֻלְצָה הַמִּסְפָּר שֶׁל בֶּקְהֶם! כְּאִלּוּ דָּה, הוּא כְּבָר בִּכְלָל לֹא אָפְנָתִי\"."}, {"text": "\"אַתָּה סְתָם מְקַנֵּא\", קוֹבַעַת עֹמֶר."}, {"question": "מָה עֹמֶר חוֹשֶׁבֶת עַל דָּנִיֵּאל?", "options": ["שֶׁהוּא מְקַנֵּא", "שֶׁהוּא צוֹדֵק", "שֶׁהוּא עָיֵף", "שֶׁהוּא שָׂמֵחַ"], "answer": 0}, {"text": "\"שְׁטֻיּוֹת!\" דָּנִיֵּאל מֵנִיד אֶת רֹאשׁוֹ, \"אֲנִי פָּשׁוּט לֹא רוֹצֶה אוֹתוֹ בַּקְּבוּצָה וַאֲנַחְנוּ גַּם לֹא מַמָּשׁ צְרִיכִים אוֹתוֹ, אֲנַחְנוּ שִׁבְעָה, גַּם בַּקְּבוּצָה שֶׁל בֵּית סֵפֶר שְׁחָקִים יֵשׁ שִׁבְעָה שַׂחְקָנִים, אֵין לָנוּ צֹרֶךְ בְּעוֹד שַׂחְקָן\"."}, {"text": "יוּבַל מְכַחְכֵּחַ בִּגְרוֹנוֹ, בִּמְבוּכָה. \"יֵשׁ רַק בְּעָיָה אַחַת\", הוּא אוֹמֵר בִּזְהִירוּת."}, {"text": "דָּנִיֵּאל מַבִּיט בּוֹ בִּתְמִיהָה."}, {"text": "\"אֲנַחְנוּ לֹא שִׁבְעָה...\" הוּא לוֹחֵשׁ."}, {"text": "עֹמֶר וְדָנִיֵּאל מַמָּשׁ לֹא מְבִינִים וְהֵם מַבִּיטִים בּוֹ שְׁנֵיהֶם בִּשְׁאֵלָה."}, {"text": "\"אֲנִי לֹא יָכוֹל לְהִשְׁתַּתֵּף מָחָר\", אוֹמֵר יוּבַל."}, {"question": "מָה יוּבַל מְסַפֵּר לַחֲבֵרִים?", "options": ["שֶׁהוּא לֹא יָכוֹל לְהִשְׁתַּתֵּף מָחָר", "שֶׁהוּא חוֹלֶה", "שֶׁהוּא עוֹבֵר דִּירָה", "שֶׁהוּא רוֹצֶה לִהְיוֹת שׁוֹעֵר"], "answer": 0}, {"text": "\"מָה?!\" מִתְרַעֲמִים הַשְּׁנַיִם בְּקוֹלֵי קוֹלוֹת."}, {"text": "\"חֲזֹר שֵׁנִית\", מְסַנֵּן דָּנִיֵּאל בְּשֶׁקֶט, \"אַתָּה לֹא יָכוֹל לְשַׂחֵק? אֲבָל זֶה בִּלְתִּי אֶפְשָׁרִי\"."}, {"text": "יוּבַל הוּא הַשַּׂחְקָן שֶׁמְּנַהֵל אֶת הַמִּשְׂחָק, הַמִּקְצוֹעָן, זֶה שֶׁאַף פַּעַם לֹא מְוַתֵּר..."}, {"text": "\"אֲנִי לֹא אֶהְיֶה\", חוֹזֵר יוּבַל. \"הַסָּבִים שֶׁלִּי חוֹגְגִים יוֹם נִשּׂוּאִין 50, אֲנִי חַיָּב לִהְיוֹת שָׁם, אַחֶרֶת יַעֲשׂוּ לִי אֶת הַמָּוֶת בַּבַּיִת, אֲנִי כָּל כָּךְ מִצְטַעֵר, שָׁכַחְתִּי מִזֶּה לְגַמְרֵי\"."}, {"question": "לָמָּה יוּבַל לֹא יָבוֹא לַמִּשְׂחָק?", "options": ["כִּי לַסָּבִים שֶׁלּוֹ יֵשׁ יוֹם נִשּׂוּאִין", "כִּי יֵשׁ לוֹ מִבְחָן", "כִּי הוּא כּוֹעֵס", "כִּי הוּא נוֹסֵעַ לְטוֹרוֹנְטוֹ"], "answer": 0}, {"text": "\"וָואוּ אָחִי, זֶה לֹא יְאֻמַּן!\" נֶאֱנַחַת עֹמֶר."}, {"text": "\"טוֹב, אָז נִהְיֶה רַק שִׁשָּׁה\", מַרְגִּיעַ דָּנִיֵּאל."}, {"text": "\"אֲבָל אִם נִהְיֶה שִׁבְעָה זֶה יִהְיֶה יוֹתֵר טוֹב\", מְשִׁיבָה עֹמֶר."}, {"text": "יוּבַל מְהַנְהֵן, \"אֲנַחְנוּ בְּסוֹפוֹ שֶׁל דָּבָר הֲרֵי רוֹצִים אֶת הַגָּבִיעַ, זֶה הֲכִי חָשׁוּב, לֹא?\""}, {"text": "דָּנִיֵּאל כּוֹעֵס, בְּרוּרָה לוֹ לְגַמְרֵי מַהִי מַשְׁמָעוּת הַדָּבָר, זֶה אוֹמֵר שֶׁנְּתַנְאֵל הַשַּׁחְצָן יִשְׁתַּתֵּף בַּמִּשְׂחָק, שֶׁהוּא יִלְבַּשׁ אֶת הַחֻלְצָה שֶׁל יוּבַל, בְּעוֹד יוּבַל יֵשֵׁב אֵצֶל הַסָּבִים שֶׁלּוֹ בְּכֵיף וְיֹאכַל בַּהֲנָאָה רַבָּה עוּגַת שׁוֹקוֹלָד טְעִימָה."}, {"question": "מִי יְשַׂחֵק בִּמְקוֹם יוּבַל?", "options": ["נָתִי", "אָבִי", "דָּנִיֵּאל", "הַסַּבָּא"], "answer": 0}, {"text": "בֶּטַח נָתִי שׁוּב יַשְׁוִיץ עִם הַיְּכוֹלוֹת שֶׁלּוֹ, וְאַחַר כָּךְ הוּא גַּם יִהְיֶה הַכּוֹכָב הַגָּדוֹל שֶׁל הַמִּשְׂחָק, זֶה לֹא פֵיר וְזֶה מְעַצְבֵּן!"}, {"text": "בָּרָק זוֹהֵר מַבְזִיק עַל הַמִּגְרָשׁ, גֶּשֶׁם מַתְחִיל לָרֶדֶת."}, {"text": "עֹמֶר וְיוּבַל רָצִים וּמְחַפְּשִׂים מַחְסֶה מִתַּחַת לַגַּג שֶׁל אוּלַם הַסְּפּוֹרְט."}, {"text": "דָּנִיֵּאל נִשְׁאָר לַעֲמֹד בַּגֶּשֶׁם, מִצִּדּוֹ הוּא יָכוֹל לְהֵרָטֵב עַד לָעֲצָמוֹת, אֵין בְּעָיָה!"}, {"text": "הֲכִי גָּרוּעַ, מָחָר הוּא יִהְיֶה חוֹלֶה. אָז מָה? יוֹתֵר טוֹב מִלִּהְיוֹת בַּגְּמָר, בּוֹ יִשְׁתַּתֵּף נָתִי הַשַּׁחְצָן."}, {"text": "יוֹתֵר מִזֶּה, הָיָה מַתְאִים לוֹ מְאֹד אִם סוּפַת גְּשָׁמִים הָיְתָה מַשְׁמִידָה אֶת מִגְרַשׁ הַסְּפּוֹרְט – הוֹרֶסֶת אֶת הַמִּדְשָׁאָה, מוֹחֶקֶת אֶת הַסִּמּוּנִים, מְעִיפָה אֶת הַשְּׁעָרִים..."}, {"text": "קָדִימָה, סוּפָה – תִּשְׁתּוֹלְלִי לָךְ!"}, {"text": "תַּרְאִי לָנוּ לְמָה אַתְּ מְסֻגֶּלֶת!"}, {"question": "מָה דָּנִיֵּאל רוֹצֶה שֶׁתַּעֲשֶׂה הַסּוּפָה?", "options": ["שֶׁתַּהֲרֹס אֶת הַמִּגְרָשׁ", "שֶׁתַּפְסִיק מַהֵר", "שֶׁתָּבִיא שֶׁלֶג", "שֶׁתַּעֲזֹר לַקְּבוּצָה"], "answer": 0}]}, {"id": "tzidi-7", "title": "צִידִי הַגּוֹלִים 7: יֵשׁ שָׁם עוֹד מַשֶּׁהוּ בַּמִּשְׂחָק...", "theme": "ספר: צידי הגולים, פרק 7 מתוך 8", "steps": [{"text": "אֲבָל, לְמָחֳרַת הַיּוֹם, הַסּוּפָה נֶחֱלֶשֶׁת וְהַשֶּׁמֶשׁ חוֹזֶרֶת לִזְרֹחַ, בְּדִיּוּק בַּזְּמַן לַמִּשְׂחָק הַגָּדוֹל."}, {"text": "מַצַּב הָרוּחַ שֶׁל קְהַל הַצּוֹפִים מְרוֹמָם."}, {"text": "רַבִּים הִגִּיעוּ לִצְפּוֹת בָּהֶם וּלְעוֹדֵד אוֹתָם."}, {"text": "שַׂחְקָנֵי בֵּית הַסֵּפֶר \"שְׂחָקִים\" בְּטוּחִים בְּנִצְחוֹנָם, הֵם רוֹצִים לִזְכּוֹת בַּגָּבִיעַ, בְּכָל מְחִיר!"}, {"question": "אֵיךְ מֶזֶג הָאֲוִיר בְּיוֹם הַמִּשְׂחָק?", "options": ["הַשֶּׁמֶשׁ זוֹרַחַת", "יֵשׁ סוּפָה", "יוֹרֵד שֶׁלֶג", "יֵשׁ עֲרָפֶל"], "answer": 0}, {"text": "אֲבָל גַּם כִּתָּה ג'3 נְחוּשָׁה לִזְכּוֹת בּוֹ, הֵם נִלְחָמִים כְּמוֹ אֲרָיוֹת, לֹא מְוַתְּרִים עַל אַף כַּדּוּר, לֹא מְפַסְפְּסִים אַף מְסִירָה, לֹא מַחֲטִיאִים שׁוּם בְּעִיטָה."}, {"text": "\"קָדִימָה, חֶבְרֶ'ה!\" קוֹרֵא אָבִי הַמְּאַמֵּן מִשּׁוּלֵי הַמִּגְרָשׁ, \"תַּמְשִׁיכוּ כָּךְ!\""}, {"text": "הֵם תּוֹקְפִים, שׁוּב וָשׁוּב."}, {"text": "קְצָת לִפְנֵי סוֹף הַמִּשְׂחָק הַתּוֹצָאָה עוֹמֶדֶת עַל 1:1."}, {"text": "הֵם טוֹבִים, הַשַּׂחְקָנִים שֶׁלִּי, מוֹדֶה אָבִי בִּפְנֵי עַצְמוֹ, הֵם פָּשׁוּט חַיָּבִים לְהַצְלִיחַ."}, {"question": "מָה הַתּוֹצָאָה קְצָת לִפְנֵי הַסּוֹף?", "options": ["1:1", "2:0", "0:0", "3:1"], "answer": 0}, {"text": "יוֹן-יוֹן מְקַבֵּל אֶת הַכַּדּוּר, הוּא מַנִּיחַ אוֹתוֹ לְרַגְלָיו וְיוֹצֵא בְּרִיצָה בְּעוֹדוֹ בּוֹעֵט בַּכַּדּוּר בְּעִיטוֹת קְצָרוֹת וּמְדֻיָּקוֹת."}, {"text": "לְפֶתַע, אֶחָד מִשַּׂחְקָנֵי בֵּית סֵפֶר \"שְׂחָקִים\" חוֹתֵךְ אוֹתוֹ וְחוֹטֵף מִמֶּנּוּ אֶת הַכַּדּוּר, הוּא בּוֹעֵט בַּכַּדּוּר לַצַּד הַשְּׂמָאלִי שֶׁל הַמִּגְרָשׁ."}, {"text": "בַּצַּד הַשְּׂמָאלִי עוֹמֵד שַׂחְקָן הַקִּשּׁוּר לְבַדּוֹ."}, {"text": "\"מִישֶׁהוּ שֶׁיָּרוּץ לְשָׁם, קָדִימָה!\" צוֹרֵחַ אָבִי."}, {"text": "רוֹנִי יוֹצֵא בְּרִיצָה לַכִּוּוּן, אֲבָל נָתִי מָהִיר יוֹתֵר, הוּא חוֹטֵף אֶת הַכַּדּוּר וּ\"מְנַפְנֵף\" אֶת הַיָּרִיב בְּקַלִּילוּת, אַף אֶחָד לֹא חוֹסֵם אוֹתוֹ וְהוּא נִמְצָא רַק מִסְפַּר מֶטְרִים בּוֹדְדִים מֵהַשַּׁעַר, הַגּוֹל הַזֶּה נִתָּן לְהַשָּׂגָה..."}, {"question": "מִי חוֹטֵף אֶת הַכַּדּוּר וּמַגִּיעַ קָרוֹב לַשַּׁעַר?", "options": ["נָתִי", "רוֹנִי", "תּוֹם", "עֹמֶר"], "answer": 0}, {"text": "\"קָדִימָה, תִּבְעַט כְּבָר!\" צוֹרֵחַ אָבִי."}, {"text": "אֲבָל נָתִי לֹא בּוֹעֵט."}, {"text": "הוּא מִסְתּוֹבֵב, מִתְבּוֹנֵן בַּקָּהָל, מְכַדְרֵר אֶת הַכַּדּוּר."}, {"text": "\"וָואוּוּ...\" לוֹחֵשׁ הַקָּהָל בְּהִתְלַהֲבוּת."}, {"text": "אוֹי לֹא! חוֹשֵׁב דָּנִיֵּאל, מְעֻצְבָּן."}, {"text": "נָתִי מַרְקִיד אֶת הַכַּדּוּר עַל רַגְלָיו וּמְגַלְגֵּל אוֹתוֹ בְּמוֹרַד קַרְסֻלּוֹ."}, {"text": "הִתְנַהֲלוּת כָּל כָּךְ מְיֻתֶּרֶת, כּוֹעֵס דָּנִיֵּאל."}, {"question": "לָמָּה דָּנִיֵּאל מְעֻצְבָּן?", "options": ["כִּי נָתִי מַשְׁוִיץ בִּמְקוֹם לִבְעֹט", "כִּי נָתִי הִבְקִיעַ", "כִּי הַשּׁוֹפֵט צָעַק", "כִּי יָרַד גֶּשֶׁם"], "answer": 0}, {"text": "בֵּינְתַיִם, מַקִּיפִים אוֹתוֹ שַׂחְקָנֵי בֵּית סֵפֶר \"שְׂחָקִים\"."}, {"text": "הוּא בּוֹעֵט לְבַסּוֹף אֶת הַכַּדּוּר לְרוֹנִי."}, {"text": "רוֹנִי מַעֲבִיר אֶת הַכַּדּוּר לְדָנִיֵּאל."}, {"text": "דָּנִיֵּאל מַעֲבִיר אֶת הַכַּדּוּר לְעֹמֶר, שֶׁמַּמְתִּינָה כְּבָר בְּחֹסֶר סַבְלָנוּת."}, {"text": "עֹמֶר מוֹסֶרֶת אֶת הַכַּדּוּר לְצַחִי, אֲבָל זֶה מְפַסְפֵּס אֶת הַכַּדּוּר."}, {"text": "אֶחָד מִשַּׂחְקָנֵי \"שְׂחָקִים\" חוֹטֵף אֶת הַכַּדּוּר וְרָץ בִּצְעָדִים גְּדוֹלִים לְעֵבֶר הַשַּׁעַר."}, {"text": "הַמַּצָּב מְסֻכָּן!"}, {"text": "תּוֹם הַשּׁוֹעֵר מִתְכּוֹנֵן בְּמֶתַח."}, {"text": "בְּרֶגַע זֶה אָבִי הָיָה רוֹצֶה לַעֲלוֹת עַל הַמִּגְרָשׁ בְּעַצְמוֹ."}, {"text": "אֲבָל רוֹנִי מַצִּיל אֶת הַמַּצָּב, בְּהֶחְלֵטִיּוּת הוּא חוֹטֵף מִשַּׂחְקַן \"שְׂחָקִים\" אֶת הַכַּדּוּר."}, {"question": "מִי מַצִּיל אֶת הַמַּצָּב לְיַד הַשַּׁעַר שֶׁל ג'3?", "options": ["רוֹנִי", "צַחִי", "נָתִי", "אָבִי"], "answer": 0}, {"text": "כָּעֵת כֻּלָּם רָצִים לַכִּוּוּן הַשֵּׁנִי, לְכִוּוּן הַשַּׁעַר שֶׁל הַיָּרִיב."}, {"text": "בִּרְחָבַת הַ-16 רוֹנִי בּוֹעֵט בְּחָזְקָה אֶת הַכַּדּוּר לַגֹּבַהּ."}, {"text": "לְפֶתַע כֻּלָּם כָּאן, בִּרְחָבַת הַ-16, קְבוּצַת \"שְׂחָקִים\", וְהַקְּבוּצָה שֶׁל כִּתָּה ג'3, כֻּלָּם רוֹצִים לִנְגֹּחַ בַּכַּדּוּר."}, {"text": "אֲבָל עוֹד מַשֶּׁהוּ מוֹפִיעַ לְפֶתַע בַּמִּשְׂחָק, אֶחָד מִשַּׂחְקָנֵי קְבוּצַת \"שְׂחָקִים\" מוֹשִׁיט זְרוֹעַ יְרֻקָּה וַאֲרֻכָּה וְחוֹבֵט בַּכַּדּוּר, מוֹצִיא אוֹתוֹ מֵאֵזוֹר הַסַּכָּנָה."}, {"text": "הַשּׁוֹפֵט שׁוֹרֵק נִמְרָצוֹת לַעֲצִירָה."}, {"text": "\"יָד!\" יָד בִּרְחָבַת הַ-16, זֶה פָּשׁוּט לֹא יְאֻמַּן!"}, {"text": "הָעֹנֶשׁ לֹא מְאַחֵר לְהַגִּיעַ: בְּעִיטַת שִׁבְעָה מֶטְרִים, זוֹ הַהִזְדַּמְּנוּת עֲבוּר ג'3! הִזְדַּמְּנוּת פָּז, שֶׁמַּגִּיעָה מַמָּשׁ לִקְרַאת סִיּוּם הַמִּשְׂחָק."}, {"question": "לָמָּה הַשּׁוֹפֵט שָׁרַק?", "options": ["שַׂחְקָן נָגַע בַּכַּדּוּר בַּיָּד", "הַמִּשְׂחָק נִגְמַר", "יָרַד גֶּשֶׁם", "נָתִי נָפַל"], "answer": 0}, {"text": "אֲבָל לְמִי הֵם יִתְּנוּ אֶת הַזְּכוּת?"}, {"text": "הַשַּׂחְקָנִים מַבִּיטִים זֶה בָּזֶה, מִתְלַבְּטִים..."}, {"text": "דָּבָר אֶחָד בָּרוּר לְכֻלָּם: מִי שֶׁיְּפַסְפֵּס, יְפַסְפֵּס לְכֻלָּם גַּם אֶת הַנִּצָּחוֹן."}, {"text": "צַחִי מֵנִיד בְּרֹאשׁוֹ. עֹמֶר שׁוֹתֶקֶת. יוֹן-יוֹן וְרוֹנִי מַשְׁפִּילִים אֶת מַבָּטָם."}, {"text": "\"אַתָּה!\" מַחְלִיט דָּנִיֵּאל וּמַצְבִּיעַ עַל נָתִי."}, {"text": "הֲרֵי הוּא תָּמִיד רוֹצֶה לְהַרְאוֹת לְכֻלָּם מָה הוּא מְסֻגָּל לַעֲשׂוֹת."}, {"text": "אִם הוּא יַבְקִיעַ, זֶה יִהְיֶה נֶהְדָּר, אָז מָה אִם הוּא יְקַבֵּל אֶת מְחִיאוֹת הַכַּפַּיִם?!"}, {"text": "אֵין צֹרֶךְ לְקַנֵּא, הָעִקָּר הַנִּצָּחוֹן."}, {"text": "אֶת בְּעִיטַת שִׁבְעַת הַמֶּטְרִים כִּמְעַט כָּל אֶחָד מְסֻגָּל לְבַצֵּעַ, וְאִם הוּא לֹא יַצְלִיחַ... הוּא יִהְיֶה בִּבְעָיָה וְזֶה יָשִׂים קֵץ לַשַּׁחְצָנוּת שֶׁלּוֹ."}, {"question": "לָמָּה דָּנִיֵּאל בּוֹחֵר בְּנָתִי לִבְעֹט?", "options": ["כִּי נָתִי תָּמִיד רוֹצֶה לְהַרְאוֹת מָה הוּא יוֹדֵעַ", "כִּי נָתִי הַשּׁוֹעֵר", "כִּי אָבִי בִּקֵּשׁ", "כִּי נָתִי בִּקֵּשׁ"], "answer": 0}, {"text": "דָּנִיֵּאל מַנִּיחַ אֶת הַכַּדּוּר עֲבוּר נָתִי עַל סִמּוּן שִׁבְעַת הַמֶּטְרִים."}, {"text": "\"יַאלְלָה, בְּהַצְלָחָה!\" הוּא מְאַחֵל לְנָתִי."}, {"text": "\"לֹא!\" לוֹחֵשׁ נָתִי."}, {"text": "לְמָה הוּא מִתְכַּוֵּן? תּוֹהִים כֻּלָּם."}, {"text": "\"אֲנִי לֹא יָכוֹל לַעֲשׂוֹת אֶת זֶה\", אוֹמֵר נָתִי בְּקוֹל רָם, כָּךְ שֶׁכֻּלָּם שׁוֹמְעִים אוֹתוֹ."}, {"text": "\"אֲנִי לֹא מְסֻגָּל לַעֲשׂוֹת אֶת זֶה\", הוּא חוֹזֵר וְאוֹמֵר בַּשֵּׁנִית."}, {"question": "מָה אוֹמֵר נָתִי לִפְנֵי הַבְּעִיטָה?", "options": ["שֶׁהוּא לֹא מְסֻגָּל לִבְעֹט", "שֶׁהוּא יִבְעַט חָזָק", "שֶׁהוּא עָיֵף", "שֶׁהוּא רוֹצֶה לָלֶכֶת"], "answer": 0}, {"text": "בְּאוֹתוֹ הָרֶגַע תּוֹם פּוֹרֵץ קָדִימָה בְּרִיצָה, כְּמוֹ טִיל, הוּא לֹא עוֹצֵר לִפְנֵי הַכַּדּוּר וְהוּא בּוֹעֵט בּוֹ תּוֹךְ כְּדֵי רִיצָה."}, {"text": "לִפְנֵי שֶׁהַשּׁוֹעֵר הַיָּרִיב מַבְחִין בְּמָה שֶׁקּוֹרֶה, הַכַּדּוּר כְּבָר נִכְנָס לְתוֹךְ הָרֶשֶׁת."}, {"text": "\"גּ וֹ ל !!! גּ וֹ ל!\" צְעָקוֹת מַחֲרִישׁוֹת אָזְנַיִם נִשְׁמָעוֹת מִקְּהַל הַמְּעוֹדְדִים."}, {"text": "\"2:1, נִצַּחְנוּ!\" צוֹעֲקִים בְּהִתְרַגְּשׁוּת חַבְרֵי הַקְּבוּצָה."}, {"text": "שְׁרִיקַת הַסִּיּוּם נִשְׁמַעַת."}, {"text": "הַמִּשְׂחָק נִגְמַר."}, {"question": "מִי הִבְקִיעַ אֶת הַגּוֹל הַמְּנַצֵּחַ?", "options": ["תּוֹם הַשּׁוֹעֵר", "נָתִי", "דָּנִיֵּאל", "רוֹנִי"], "answer": 0}]}, {"id": "tzidi-8", "title": "צִידִי הַגּוֹלִים 8: רַק עַד לַסְּתָו", "theme": "ספר: צידי הגולים, פרק 8 מתוך 8", "steps": [{"text": "\"תָּמִיד רָצִיתִי לְהַבְקִיעַ שַׁעַר!\" אוֹמֵר בְּשִׂמְחָה תּוֹם."}, {"text": "בַּאֲשֶׁר רַב הוּא אוֹחֵז אֶת הַגָּבִיעַ הַנִּפְלָא וְהַנּוֹצֵץ קָרוֹב לְלִבּוֹ."}, {"text": "\"אַתֶּם שִׂחַקְתֶּם פָּשׁוּט יוֹצֵא מִן הַכְּלָל!\" מְשַׁבֵּחַ אוֹתָם אָבִי."}, {"question": "מָה תּוֹם תָּמִיד רָצָה?", "options": ["לְהַבְקִיעַ שַׁעַר", "לִהְיוֹת מְאַמֵּן", "לִנְסֹעַ לְקָנָדָה", "לִהְיוֹת שׁוֹפֵט"], "answer": 0}, {"text": "\"וָואוּ, נָתִי, זֶה הָיָה פָּשׁוּט מַגְנִיב\", אוֹמֵר דָּנִיֵּאל, \"לְהוֹדוֹת בִּפְנֵי כֻּלָּם שֶׁאַתָּה לֹא מְסֻגָּל לְבַצֵּעַ מַשֶּׁהוּ – לֹא כָּל אֶחָד מְסֻגָּל לְכָךְ\"."}, {"text": "\"שְׁטֻיּוֹת, חוּץ מִזֶּה, אֲנִי דֵּי מֻשְׁלָם\", אוֹמֵר בְּחִיּוּךְ נָתִי."}, {"text": "כֻּלָּם מְבִינִים שֶׁנְּתַנְאֵל בְּעֶצֶם צוֹחֵק עַל חֶשְׁבּוֹנוֹ."}, {"question": "לָמָּה דָּנִיֵּאל אוֹמֵר שֶׁנָּתִי הָיָה מַגְנִיב?", "options": ["כִּי הוּא הוֹדָה שֶׁהוּא לֹא מְסֻגָּל", "כִּי הוּא הִבְקִיעַ", "כִּי הוּא הֵבִיא כַּדּוּר", "כִּי הוּא לָבַשׁ חֻלְצָה יָפָה"], "answer": 0}, {"text": "אֲבָל אָז הוּא חוֹזֵר לִהְיוֹת רְצִינִי, \"אֲנִי צָרִיךְ לְסַפֵּר לָכֶם מַשֶּׁהוּ, אֲנִי נִשְׁאָר רַק עַד הַסְּתָו בַּכִּתָּה שֶׁלָּכֶם, בַּסְּתָו מַעֲבִירִים אֶת אַבָּא שֶׁלִּי לְתַפְקִיד אַחֵר, וַאֲנַחְנוּ שׁוּב עוֹבְרִים לְעִיר אַחֶרֶת\"."}, {"text": "\"אוּלַי חֲזָרָה לְטוֹרוֹנְטוֹוֹוֹ...?\" לוֹעֵג דָּנִיֵּאל."}, {"question": "מָה יִקְרֶה לְנָתִי בַּסְּתָו?", "options": ["הוּא יַעֲבֹר לְעִיר אַחֶרֶת", "הוּא יִהְיֶה מְאַמֵּן", "הוּא יַעֲלֶה כִּתָּה", "הוּא יִשָּׁאֵר לְתָמִיד"], "answer": 0}, {"text": "עֹמֶר תּוֹקַעַת מַרְפֵּק בְּצַלְעוֹתָיו, \"תַּפְסִיק כְּבָר!\""}, {"text": "\"זֶה לֹא קַל בִּכְלָל וּבֶטַח מְבָאֵס מְאֹד לְהַחֲלִיף כָּל הַזְּמַן בָּתֵּי סֵפֶר, נָכוֹן?\" שׁוֹאֵל רוֹנִי."}, {"text": "נָתִי מֵשִׁיב: \"זֶה אֲפִלּוּ מְאֹד מְבָאֵס, בְּדִיּוּק כְּשֶׁאֲנִי מוֹצֵא חֲבֵרִים, אֲנִי חַיָּב לַעֲזֹב שׁוּב\"."}, {"question": "מָה הֲכִי מְבָאֵס לְנָתִי?", "options": ["לַעֲזֹב בְּדִיּוּק כְּשֶׁהוּא מוֹצֵא חֲבֵרִים", "לְהַפְסִיד בְּמִשְׂחָק", "לִלְמֹד חֶשְׁבּוֹן", "לֶאֱכֹל הַמְבּוּרְגֶּר"], "answer": 0}, {"text": "\"אַל דְּאָגָה, עַד הַסְּתָו יֵשׁ עוֹד הַרְבֵּה זְמַן וְעַד אָז אֲנַחְנוּ נַעֲזֹר לְךָ לְהִתְאַמֵּן בְּ-אֵיךְ לִמְצֹא חֲבֵרִים יוֹתֵר מַהֵר\", מַבְטִיחִים חֲבֵרָיו לַקְּבוּצָה."}, {"text": "נָתִי מְחַיֵּךְ, \"אוֹ-קֵיי, וַאֲנִי אַרְאֶה לָכֶם כַּמָּה טְרִיקִים עִם הַכַּדּוּר\"."}, {"text": "\"וַאֲנַחְנוּ נְלַמֵּד אוֹתְךָ אֵיךְ מַבְקִיעִים אֶת בְּעִיטַת-שִׁבְעַת הַמֶּטְרִים!\" מַקְנִיטָה עֹמֶר."}, {"text": "\"וּבַשָּׁנָה הַבָּאָה אֲנַחְנוּ נְשַׂחֵק נֶגֶד הַקְּבוּצָה הַחֲדָשָׁה שֶׁלְּךָ, מִתְעָרְבִים שֶׁאֲנַחְנוּ נְנַצֵּחַ?\""}, {"text": "\"אֲנִי מַצִּיעַ שֶׁנַּתְחִיל בָּאִמּוּן!\" קוֹרֵא צַחִי וּבוֹעֵט אֶת הַכַּדּוּר הַרְחֵק."}, {"text": "כֻּלָּם מַתְחִילִים לָרוּץ אַחֲרָיו."}, {"text": "רַק תּוֹם נִשְׁאָר מֵאָחוֹר, הוּא נוֹשֵׁק לַגָּבִיעַ בַּסֵּתֶר, הַגּוֹל הָרִאשׁוֹן שֶׁלּוֹ!"}, {"text": "עַכְשָׁו יִהְיֶה לוֹ עַל מָה לַחֲלֹם בִּזְמַן שֶׁהוּא יַעֲמֹד וְיִשְׁתַּעֲמֵם בַּשַּׁעַר לְבַד."}, {"question": "מָה עָשָׂה תּוֹם בַּסֵּתֶר?", "options": ["נָשַׁק לַגָּבִיעַ", "בָּכָה", "אָכַל עוּגָה", "הָלַךְ הַבַּיְתָה"], "answer": 0}, {"question": "מָה לָמְדוּ הַיְּלָדִים בַּסִּפּוּר?", "options": ["שֶׁכַּדּוּרֶגֶל הוּא מִשְׂחָק שֶׁל קְבוּצָה", "שֶׁכְּדַאי לְהַשְׁוִיץ", "שֶׁכְּדַאי לְשַׂחֵק לְבַד", "שֶׁגֶּשֶׁם מַפְרִיעַ לְכַדּוּרֶגֶל"], "answer": 0}]}]}];
+
+// ---------- storage (per device) ----------
+const KEY = "kria-v1";
+function freshState() {
+  return { kids: {
+    small: { name: "דין", grade: 1, color: "#2f6fe4", level: 1, candies: 0, levelCandies: {}, runs: {} },
+    big:   { name: "טום", grade: 3, color: "#f08a24", level: 2, candies: 0, levelCandies: {}, runs: {} },
+  }, me: null, muted: false };
+}
+let state;
+try { state = JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch (e) { state = freshState(); }
+// Earlier versions called the kids "הקטן"/"הגדול"; switch saved data on this device to their names.
+for (const [id, old, now] of [["small", "הקטן", "דין"], ["big", "הגדול", "טום"]]) if (state.kids[id] && state.kids[id].name === old) state.kids[id].name = now;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+// Candies needed to pass each level. Level 2 has 3 stories so far (22 questions).
+const GATE = { 1: 20, 2: 15 };
+const FAST_MS = 1500;          // answering faster than this looks like a guess
+const SKIM_MS_PER_WORD = 200;  // reading faster than this per word looks like skipping
+
+const levelFor = kid => CONTENT.find(l => l.level === kid.level);
+// We have built-in stories for two levels: grade 1, and grade 2 and up.
+const levelForGrade = g => g <= 1 ? 1 : 2;
+const GRADES = ["א", "ב", "ג", "ד", "ה", "ו"];
+const plain = s => String(s || "").replace(/[\u0591-\u05C7]/g, "").replace(/\s+/g, " ").trim();
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const app = $("#app");
+
+// ---------- sound ----------
+let audio;
+function beep(kind) {
+  if (state.muted) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(), g = audio.createGain(), t = audio.currentTime;
+    o.connect(g); g.connect(audio.destination);
+    if (kind === "good") { o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(1040, t + .25); }
+    else { o.type = "triangle"; o.frequency.setValueAtTime(400, t); o.frequency.exponentialRampToValueAtTime(90, t + .6); }
+    g.gain.setValueAtTime(.18, t); g.gain.exponentialRampToValueAtTime(.001, t + .7);
+    o.start(t); o.stop(t + .7);
+  } catch (e) {}
+}
+
+// ---------- candy ----------
+function candyBar(kid) {
+  const lc = kid.levelCandies[kid.level] || 0;
+  const inTen = lc % 10, lolli = Math.floor(lc / 20), handful = (lc % 20) >= 10;
+  let slots = "";
+  for (let i = 0; i < 10; i++) slots += `<span class="slot ${i < inTen ? "on" : ""}">${i < inTen ? "🍬" : ""}</span>`;
+  return `<div class="candy" id="candy" aria-label="${lc} סוכריות">
+    <div class="slots">${slots}</div>
+    <div class="prizes">${handful ? '<span title="חופן סוכריות">🍬🍬🍬</span>' : ""}
+      ${lolli ? `<span title="סוכריה על מקל">🍭</span><span class="prize-count">×${lolli}</span>` : ""}</div>
+    <span class="goal">${lc >= GATE[kid.level] ? "אפשר לעבור שלב!" : `עוד ${GATE[kid.level] - lc} סוכריות לשלב הבא`}</span>
+  </div>`;
+}
+function addCandy(kid, n, fromEl) {
+  const lc = kid.levelCandies[kid.level] || 0;
+  const next = Math.max(0, lc + n);
+  kid.levelCandies[kid.level] = next;
+  kid.candies = Math.max(0, kid.candies + (next - lc));
+  save();
+  if (fromEl && next !== lc) {
+    const r = fromEl.getBoundingClientRect(), c = $("#candy").getBoundingClientRect();
+    const p = document.createElement("div");
+    p.className = "pop"; p.textContent = n > 0 ? "🍬+1" : "🍬−1";
+    p.style.left = r.left + r.width / 2 + "px"; p.style.top = r.top + "px";
+    document.body.appendChild(p);
+    requestAnimationFrame(() => {
+      p.style.transform = n > 0 ? `translate(${c.left + c.width / 2 - r.left - r.width / 2}px, ${c.top - r.top}px)` : "translateY(80px)";
+      p.style.opacity = "0";
+    });
+    setTimeout(() => p.remove(), 1000);
+  }
+  $("#candy").outerHTML = candyBar(kid);
+}
+
+// ---------- the running kid ----------
+// Jointed figure: each leg bends at hip and knee, each arm at shoulder and elbow, so the run reads as fluid motion.
+const SKIN = "#f5c7a1", SKIN_D = "#e3a982", PANTS = "#2f4466", HAIR = "#5a3a22";
+function limb(cls, x, y, len1, len2, w, color, end) {
+  return `<g class="${cls}" data-x="${x}" data-y="${y}"><path d="M${x},${y} L${x},${y + len1}" stroke="${color}" stroke-width="${w}" stroke-linecap="round"/>
+    <g class="${cls}2" data-y="${y + len1}"><path d="M${x},${y + len1} L${x},${y + len1 + len2}" stroke="${color}" stroke-width="${w - 1}" stroke-linecap="round"/>${end(x, y + len1 + len2)}</g></g>`;
+}
+const shoe = (x, y) => `<path d="M${x - 4},${y - 2} q0,5 5,5 h7 q3,0 3,-3 q0,-3 -4,-3 h-6 z" fill="#fff" stroke="#2b2b2b" stroke-width="1.6"/><path d="M${x - 4},${y + 2.5} h14" stroke="#e4572e" stroke-width="2"/>`;
+const hand = (x, y) => `<circle cx="${x}" cy="${y}" r="3.6" fill="${SKIN}"/>`;
+function kidSvg(color, id = "") {
+  return `<g ${id ? `id="${id}"` : ""}><g class="bodyBob">
+    <g class="legB" opacity=".85">${limb("legB", 0, -32, 16, 15, 7.5, PANTS, shoe)}</g>
+    <g class="armB" opacity=".85">${limb("armB", 0, -56, 11, 11, 5.5, SKIN_D, hand)}</g>
+    <path d="M-11,-50 Q-12,-64 0,-64 Q12,-64 11,-50 L10,-31 Q0,-27 -10,-31 Z" fill="${color}"/>
+    <path d="M-11,-50 Q-12,-64 0,-64 L0,-29 Q-6,-29 -10,-31 Z" fill="#000" opacity=".08"/>
+    <g class="legA">${limb("legA", 0, -32, 16, 15, 7.5, PANTS, shoe)}</g>
+    <g class="head">
+      <circle cx="0" cy="-77" r="14.5" fill="${SKIN}"/>
+      <circle cx="-9" cy="-76" r="3.4" fill="${SKIN_D}"/>
+      <path d="M-15,-78 Q-16,-95 1,-94 Q15,-93 15,-82 Q8,-88 2,-85 Q-3,-90 -8,-85 Q-12,-84 -15,-78 Z" fill="${HAIR}"/>
+      <path d="M-2,-94 q4,-6 9,-3 q-5,0 -6,4 z" fill="${HAIR}"/>
+      <ellipse class="eye" cx="6.5" cy="-77" rx="3.1" ry="3.6" fill="#fff"/><circle class="pupil" cx="7.4" cy="-76.6" r="1.9" fill="#23324a"/>
+      <circle cx="9" cy="-70" r="2.6" fill="#ff8f8f" opacity=".45"/>
+      <path class="mouth" d="M3,-69 Q7.5,-65 11.5,-69.5" stroke="#7a2e2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+    <g class="armA">${limb("armA", 0, -56, 11, 11, 5.5, SKIN, hand)}</g>
+  </g></g>`;
+}
+const BANANA = `<g id="banana"><path d="M-23,-5 Q-2,12 22,-7 Q25,-11 20,-10 Q-1,3 -21,-10 Q-26,-9 -23,-5 Z" fill="url(#banG)" stroke="#b8860b" stroke-width="1.6"/>
+  <path d="M-15,-4 Q0,3 14,-5" stroke="#fff6b8" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>
+  <path d="M20,-10 l5,-4" stroke="#6b4f00" stroke-width="3.2" stroke-linecap="round"/><circle cx="-22.5" cy="-7" r="1.6" fill="#6b4f00"/></g>`;
+
+function trackHtml(color) {
+  return `<div class="track" id="track"><svg viewBox="0 -50 600 180" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <defs>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fd8ff"/><stop offset="1" stop-color="#e6f6ff"/></linearGradient>
+      <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd16a"/><stop offset="1" stop-color="#5fae46"/></linearGradient>
+      <linearGradient id="banG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe46b"/><stop offset="1" stop-color="#f4b400"/></linearGradient>
+      <radialGradient id="sunG"><stop offset="0" stop-color="#fff7c2"/><stop offset=".6" stop-color="#ffd84d"/><stop offset="1" stop-color="#ffd84d" stop-opacity="0"/></radialGradient>
+    </defs>
+    <rect x="-600" y="-400" width="1800" height="600" fill="url(#skyG)"/>
+    <g class="rays">${Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${80 + Math.cos(a) * 30},${Math.sin(a) * 30} L${80 + Math.cos(a) * 44},${Math.sin(a) * 44}" stroke="#ffd84d" stroke-width="4" stroke-linecap="round" opacity=".8"/>`; }).join("")}</g>
+    <circle cx="80" cy="0" r="34" fill="url(#sunG)"/>
+    <circle cx="80" cy="0" r="17" fill="#ffe066"/>
+    <g class="flock"><g transform="translate(0,-20)"><path class="wing" d="M0,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/><path class="wing" d="M10,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/></g>
+      <g transform="translate(26,-8) scale(.8)"><path class="wing" d="M0,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/><path class="wing" d="M10,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/></g></g>
+    <g class="flock f2"><g transform="translate(0,10) scale(.7)"><path class="wing" d="M0,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/><path class="wing" d="M10,0 q5,-6 10,0" stroke="#3b4a66" stroke-width="2" fill="none"/></g></g>
+    <g class="clouds"><g class="cloud c1"><ellipse cx="420" cy="0" rx="34" ry="11" fill="#fff"/><ellipse cx="404" cy="-7" rx="16" ry="12" fill="#fff"/><ellipse cx="430" cy="-9" rx="18" ry="13" fill="#fff"/></g>
+      <g class="cloud c2"><ellipse cx="230" cy="18" rx="26" ry="8" fill="#fff" opacity=".85"/><ellipse cx="240" cy="12" rx="14" ry="9" fill="#fff" opacity=".85"/></g></g>
+    <path d="M-200,86 Q-60,40 80,78 T360,70 T640,80 T900,72 V200 H-200 Z" fill="#b7e39a"/>
+    ${[[160, 84, 1, ""], [470, 76, .85, "s2"], [610, 82, 1.1, "s3"], [-20, 80, .9, "s2"]].map(([x, y, k, c]) => `<g transform="translate(${x},${y}) scale(${k})">
+      <rect x="-3" y="-18" width="6" height="20" rx="2" fill="#8a5a33"/>
+      <g class="sway ${c}"><circle cx="0" cy="-30" r="16" fill="#4fa64a"/><circle cx="-11" cy="-22" r="11" fill="#5cb855"/><circle cx="11" cy="-23" r="11" fill="#469a42"/><circle cx="-4" cy="-36" r="6" fill="#6cc865" opacity=".8"/>
+        <circle cx="6" cy="-27" r="2.4" fill="#e8483f"/><circle cx="-8" cy="-31" r="2.4" fill="#e8483f"/></g></g>`).join("")}
+    <path d="M-200,100 Q0,70 200,96 T600,92 T900,98 V160 H-200 Z" fill="url(#grassG)"/>
+    ${[[40, 104], [230, 100], [520, 103]].map(([x, y], i) => `<g class="sway ${["", "s2", "s3"][i]}"><ellipse cx="${x}" cy="${y}" rx="22" ry="11" fill="#58ad48"/><ellipse cx="${x - 9}" cy="${y - 4}" rx="11" ry="8" fill="#68bf57"/></g>`).join("")}
+    <rect x="-600" y="112" width="1800" height="200" fill="#e8cf9d"/><rect x="-600" y="112" width="1800" height="3" fill="#d5b77d"/>
+    <g fill="#4f9a3a">${Array.from({ length: 30 }, (_, i) => `<path d="M${-180 + i * 34},112 l3,-7 l2,7 l3,-5 l1,5 z"/>`).join("")}</g>
+    ${Array.from({ length: 11 }, (_, i) => { const x = -10 + i * 57 + (i % 3) * 9, c = ["#ff6fa3", "#ffd23f", "#ffffff", "#b388ff"][i % 4];
+      return `<g class="sway ${["", "s2", "s3"][i % 3]}"><path d="M${x},113 q1,-6 0,-11" stroke="#3f8a33" stroke-width="1.6" fill="none"/>
+        ${[0, 72, 144, 216, 288].map(a => `<circle cx="${x + Math.cos(a * Math.PI / 180) * 2.6}" cy="${102 + Math.sin(a * Math.PI / 180) * 2.6}" r="2.2" fill="${c}"/>`).join("")}<circle cx="${x}" cy="102" r="1.6" fill="#f6a400"/></g>`; }).join("")}
+    <g class="butterfly"><g transform="translate(470,70)"><ellipse class="bwing" cx="-4" cy="0" rx="5" ry="6" fill="#ff8a3d"/><ellipse class="bwing r" cx="4" cy="0" rx="5" ry="6" fill="#ffb067"/><rect x="-.8" y="-5" width="1.6" height="10" rx=".8" fill="#3b2a1a"/></g></g>
+    <ellipse id="kidShadow" cx="70" cy="117" rx="16" ry="3.5" fill="#000" opacity=".18"/>
+    <ellipse id="bananaShadow" cx="300" cy="117" rx="18" ry="3" fill="#000" opacity=".15"/>
+    <g id="bananaPos" transform="translate(300,114)">${BANANA}</g>
+    <g id="stars" opacity="0"></g>
+    <g id="fx"></g>
+    <g id="kidPos" transform="translate(70,114)">${kidSvg(color, "kid")}</g>
+  </svg><div class="bubble" id="bubble" hidden></div></div>`;
+}
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let anim = null;
+function rot(el, a, cx, cy) { el && el.setAttribute("transform", `rotate(${a},${cx},${cy})`); }
+// legSwing/armSwing: swing angle in degrees (positive = leg A forward). Knees and elbows follow the swing.
+function setKid(x, y, r, legSwing, armSwing, opt = {}) {
+  const k = $("#kidPos"); if (!k) return;
+  const bob = opt.bob || 0, lean = opt.lean || 0;
+  k.setAttribute("transform", `translate(${x},${114 + y}) rotate(${r + lean})`);
+  $(".bodyBob", k).setAttribute("transform", `translate(0,${bob})`);
+  const leg = (cls, a) => { rot($(`g.${cls}`, k), -a, 0, -32); rot($(`.${cls}2`, k), opt.knee != null ? opt.knee : Math.max(8, 10 + a * .9), 0, -16); };
+  // the leg swinging back bends more at the knee, like a real stride
+  leg("legA", legSwing); leg("legB", -legSwing);
+  const arm = (cls, a) => { rot($(`g.${cls}`, k), a, 0, -56); rot($(`.${cls}2`, k), opt.elbow != null ? opt.elbow : -55, 0, -45); };
+  arm("armA", armSwing); arm("armB", -armSwing);
+  const sh = $("#kidShadow"); if (sh) { const h = Math.max(0, -y); sh.setAttribute("cx", x); sh.setAttribute("rx", 16 - h * .12); sh.setAttribute("opacity", .18 - h * .002); }
+}
+function setBanana(x, y, r) { const b = $("#bananaPos"); if (b) b.setAttribute("transform", `translate(${x},${114 + y}) rotate(${r})`); const s = $("#bananaShadow"); if (s) { s.setAttribute("cx", x); s.setAttribute("opacity", .15 + y * .002); } }
+function bubble(text, cls) { const b = $("#bubble"); if (!b) return; b.textContent = text; b.className = "bubble " + cls; b.hidden = !text; }
+
+// While waiting, the kid breathes, blinks, looks around and waves now and then.
+let idleRaf = null;
+function idle() {
+  cancelAnimationFrame(idleRaf);
+  if (reduceMotion) return;
+  const t0 = performance.now();
+  const step = now => {
+    const k = $("#kidPos"); if (!k) return;
+    const t = (now - t0) / 1000, cyc = t % 7;
+    setKid(70, 0, 0, Math.sin(t * 1.6) * 3, Math.sin(t * 1.6) * 5, { bob: Math.sin(t * 3) * 1.2 });
+    if (cyc > 4.6 && cyc < 6.2) { rot($("g.armA", k), 160 + Math.sin(cyc * 14) * 22, 0, -56); rot($(".armA2", k), -20, 0, -45); }
+    const blink = (t % 3.3) < .13, eye = $(".eye", k), pupil = $(".pupil", k);
+    if (eye) { eye.setAttribute("ry", blink ? .5 : 3.6); pupil.setAttribute("opacity", blink ? 0 : 1); pupil.setAttribute("cx", 7.4 + Math.sin(t * .7) * .9); }
+    idleRaf = requestAnimationFrame(step);
+  };
+  idleRaf = requestAnimationFrame(step);
+}
+// Full-screen confetti for a right answer: a canvas over the whole app, pieces burst up and rain down.
+function screenConfetti() {
+  if (reduceMotion) return;
+  const c = document.createElement("canvas"), dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = innerWidth, H = innerHeight;
+  c.width = W * dpr; c.height = H * dpr;
+  c.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30";
+  document.body.appendChild(c);
+  const g = c.getContext("2d"); g.scale(dpr, dpr);
+  const colors = ["#ff5c8a", "#ffc93c", "#2f6fe4", "#2e9e5b", "#b388ff", "#ff8a3d", "#3ad1e0"];
+  const n = Math.round(Math.min(220, W * H / 4500));
+  const parts = Array.from({ length: n }, (_, i) => {
+    const fromSide = i % 2 ? 1 : -1, burst = i < n * .45;  // half shoot up from the bottom corners, half rain from the top
+    return burst
+      ? { x: fromSide < 0 ? 0 : W, y: H * .85, vx: -fromSide * (200 + Math.random() * 700), vy: -(450 + Math.random() * 650), delay: 0 }
+      : { x: Math.random() * W, y: -20 - Math.random() * H * .4, vx: (Math.random() - .5) * 120, vy: 60 + Math.random() * 160, delay: Math.random() * .35 };
+  }).map((p, i) => Object.assign(p, { w: 7 + Math.random() * 7, h: 10 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - .5) * 14, sway: Math.random() * 6, color: colors[i % colors.length], round: i % 5 === 0 }));
+  const t0 = performance.now(), life = 2.4;
+  const step = now => {
+    const t = (now - t0) / 1000;
+    g.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      const dt = Math.max(0, t - p.delay);
+      const x = p.x + p.vx * dt * Math.exp(-dt * .8) + Math.sin(dt * 4 + p.sway) * 14;
+      const y = p.y + p.vy * dt + 420 * dt * dt;
+      g.save(); g.globalAlpha = Math.max(0, Math.min(1, (life - t) / .5));
+      g.translate(x, y); g.rotate(p.r + p.vr * dt); g.scale(1, Math.cos(dt * 9 + p.sway));
+      g.fillStyle = p.color;
+      if (p.round) { g.beginPath(); g.arc(0, 0, p.w / 2, 0, 7); g.fill(); } else g.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      g.restore();
+    }
+    if (t < life) requestAnimationFrame(step); else c.remove();
+  };
+  requestAnimationFrame(step);
+}
+// confetti when right, dust when the kid lands or slips
+function burst(x, y, kind) {
+  const g = $("#fx"); if (!g || reduceMotion) return;
+  const confetti = kind === "confetti", n = confetti ? 28 : 7, parts = [];
+  const colors = ["#ff5c8a", "#ffc93c", "#2f6fe4", "#2e9e5b", "#b388ff", "#ff8a3d"];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", confetti ? "rect" : "circle");
+    if (confetti) { el.setAttribute("width", 5); el.setAttribute("height", 8); el.setAttribute("x", -2.5); el.setAttribute("y", -4); el.setAttribute("fill", colors[i % colors.length]); }
+    else { el.setAttribute("r", 4 + Math.random() * 3); el.setAttribute("fill", "#d8c094"); }
+    g.appendChild(el);
+    parts.push({ el, vx: (Math.random() - .5) * (confetti ? 300 : 90), vy: confetti ? -(140 + Math.random() * 170) : -(8 + Math.random() * 22), r: Math.random() * 360, vr: (Math.random() - .5) * 900 });
+  }
+  const t0 = performance.now(), life = confetti ? 1.4 : .7;
+  const step = now => {
+    const dt = (now - t0) / 1000;
+    for (const p of parts) {
+      const px = x + p.vx * dt, py = y + p.vy * dt + (confetti ? 300 : 0) * dt * dt;
+      p.el.setAttribute("transform", `translate(${px},${py}) rotate(${p.r + p.vr * dt}) scale(${confetti ? 1 : 1 + dt * 2.2})`);
+      p.el.setAttribute("opacity", Math.max(0, 1 - dt / life));
+    }
+    if (dt < life && g.isConnected) requestAnimationFrame(step); else parts.forEach(p => p.el.remove());
+  };
+  requestAnimationFrame(step);
+}
+
+function play(frames, total, done) {
+  cancelAnimationFrame(anim);
+  cancelAnimationFrame(idleRaf);
+  const t0 = performance.now();
+  const step = now => {
+    const t = Math.min(1, (now - t0) / (reduceMotion ? total / 3 : total));
+    frames(t);
+    if (t < 1) anim = requestAnimationFrame(step); else done && done();
+  };
+  anim = requestAnimationFrame(step);
+}
+const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+function resetScene() { setKid(70, 0, 0, 0, 0); setBanana(300, 0, 0); $("#stars") && $("#stars").setAttribute("opacity", 0); bubble("", ""); idle(); }
+
+function animateCorrect(done) {
+  bubble("יֵשׁ!", "good");
+  let popped = false, landed = false;
+  play(t => {
+    const x = 70 + 470 * ease(t), ph = t * 26;
+    const inJump = x > 215 && x < 385, j = (x - 215) / 170;
+    if (inJump) {
+      const y = -58 * Math.sin(Math.PI * j);
+      // tuck in the air, stretch toward landing
+      setKid(x, y, 0, 30 - 50 * j, 130 - 60 * j, { knee: 70 - 50 * j, elbow: -30, lean: 8 - 10 * j });
+    } else {
+      setKid(x, 0, 0, Math.sin(ph) * 34, Math.sin(ph) * 40, { bob: -Math.abs(Math.cos(ph)) * 3, lean: 7 });
+    }
+    if (!popped && x > 300) { popped = true; screenConfetti(); }
+    if (!landed && x >= 385) { landed = true; burst(385, 112, "dust"); }
+    const wob = Math.max(0, 1 - Math.abs(x - 300) / 60);
+    setBanana(300, 0, Math.sin(t * 60) * 12 * wob);
+  }, 1900, () => setTimeout(() => { resetScene(); done && done(); }, 250));
+}
+function animateWrong(done) {
+  play(t => { const x = 70 + 205 * t, ph = t * 14; setKid(x, 0, 0, Math.sin(ph) * 34, Math.sin(ph) * 40, { bob: -Math.abs(Math.cos(ph)) * 3, lean: 7 }); }, 700, () => {
+    bubble("אוּפְּס!", "bad");
+    let thud = false;
+    play(t => {
+      if (!thud && t > .66) { thud = true; burst(305, 112, "dust"); }
+      const e = ease(t), up = Math.sin(Math.PI * Math.min(1, t * 1.5));
+      // feet fly forward, body tips back, arms flail, then a soft bounce on the ground
+      const land = t > .66 ? Math.sin(Math.PI * (t - .66) / .34) * 4 : 0;
+      setKid(275 + 34 * e, -38 * up - land, -85 * e, -70 * e, 150 * e + Math.sin(t * 30) * 20 * (1 - e), { knee: 15, elbow: -20 + Math.sin(t * 25) * 25 });
+      setBanana(300 + 130 * e, -55 * Math.sin(Math.PI * e), 600 * e);
+    }, 1000, () => {
+      const s = $("#stars");
+      s.innerHTML = [0, 1, 2].map(i => `<text class="star" x="${248 + i * 18}" y="${92 - (i % 2) * 8}" font-size="18" fill="#ffc93c" style="animation-delay:${i * 120}ms">★</text>`).join("");
+      s.setAttribute("opacity", 1);
+      setTimeout(() => { resetScene(); done && done(); }, 1100);
+    });
+  });
+}
+
+// ---------- library: built-in content + what the parent uploaded ----------
+// A "lesson" is one text (homework). A "book" is a list of chapters read in order.
+// Built-in stories are grouped by their id prefix ("tuki-3" -> book "tuki"); homework themes become lessons.
+// Each device belongs to one kid (state.me). Other kids are known from shared storage (kids/*).
+const remoteKidCache = {};
+function K(id) {
+  if (state.kids[id]) return state.kids[id];
+  const r = remote.kids.find(k => k.id === id) || { name: "ילד", grade: 2 };
+  const c = remoteKidCache[id] = remoteKidCache[id] || { color: "#2f6fe4", candies: 0, levelCandies: {}, runs: {} };
+  return Object.assign(c, { name: r.name, grade: r.grade, level: levelForGrade(r.grade) });
+}
+function allKidIds() { return [...new Set([...Object.keys(state.kids), ...remote.kids.map(k => k.id)])]; }
+async function registerKid() {
+  if (!remote.db || !state.me) return;
+  const k = state.kids[state.me], ref = remote.db.doc("kids/" + state.me);
+  try {
+    const cur = await ref.get();
+    if (!cur.exists || cur.data().name !== k.name || cur.data().grade !== k.grade) await ref.set({ name: k.name, grade: k.grade, updatedAt: Date.now() });
+  } catch (e) {}
+}
+function builtinFor(kidId) {
+  const lvl = levelFor(K(kidId));
+  const lessons = [], books = {};
+  for (const s of lvl.stories) {
+    if (s.theme === "שיעורי בית") { if (kidId === "big") lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] }); continue; }
+    const m = /^(.+)-\d+$/.exec(s.id), key = m ? m[1] : "short";
+    const t = /^(?:ספר|סיפור): (.+?), פרק/.exec(s.theme || "");
+    (books[key] = books[key] || { id: "builtin-" + key, kind: "book", title: t ? t[1] : "סיפורים קצרים", createdAt: 0, stories: [] }).stories.push(s);
+  }
+  return { lessons, books: Object.values(books) };
+}
+
+// Data shared between the parent's phone and the kid's tablet (claude.ai artifact storage).
+const remote = { db: null, sample: null, items: [], drafts: [], runs: [], kids: [], loaded: false, slow: false };
+const chapterCache = {};
+let refresh = null;  // re-renders the current list screen when shared data changes
+function remoteItems(kidId, kind) {
+  return remote.items.filter(i => i.kid === kidId && i.kind === kind).sort((a, b) => b.createdAt - a.createdAt);
+}
+function library(kidId) {
+  const b = builtinFor(kidId);
+  return {
+    lessons: [...remoteItems(kidId, "lesson"), ...b.lessons],   // newest first, built-in homework last
+    books: [...remoteItems(kidId, "book"), ...b.books],
+  };
+}
+function chapterStub(item, n) { return { id: item.id + "~" + n, title: item.chapters[n].title, remote: true, item, n }; }
+function storiesOf(item) { return item.stories || item.chapters.map((_, n) => chapterStub(item, n)); }
+async function loadStory(st) {
+  if (!st.remote) return st;
+  const key = st.item.id + "@" + st.item.version;
+  if (!chapterCache[key]) {
+    const snap = await remote.db.collection(`items/${st.item.id}/chapters`).get();
+    chapterCache[key] = {};
+    snap.docs.forEach(d => chapterCache[key][d.data().n] = d.data().steps);
+  }
+  const steps = chapterCache[key][st.n];
+  if (!steps) throw new Error("missing chapter");
+  return { id: st.id, title: st.title, steps };
+}
+
+// Runs: kept on this device, and copied to shared storage so the parent sees them on the phone.
+function runsOf(kidId, storyId) {
+  const local = K(kidId).runs[storyId] || [];
+  const dates = new Set(local.map(r => r.date));
+  const extra = remote.runs.filter(r => r.kid === kidId && r.storyId === storyId && !dates.has(r.date));
+  return [...local, ...extra].sort((a, b) => a.date - b.date);
+}
+const isDone = (kidId, storyId) => runsOf(kidId, storyId).length > 0;
+
+async function startRemote() {
+  if (!window.claude || !claude.use) return;
+  const [db, sample] = await Promise.all([claude.use("db"), claude.use("sample")]);
+  remote.sample = sample;
+  if (!db) return;
+  remote.db = db;
+  const timer = setTimeout(() => { remote.slow = true; refresh && refresh(); }, 10000);
+  const watch = (name, key) => db.collection(name).onSnapshot(snap => {
+    remote[key] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!snap.metadata.fromCache) { remote.loaded = true; remote.slow = false; clearTimeout(timer); }
+    refresh && refresh();
+  }, () => { clearTimeout(timer); remote.slow = true; refresh && refresh(); });
+  watch("items", "items"); watch("drafts", "drafts"); watch("runs", "runs"); watch("kids", "kids");
+  registerKid();
+}
+
+// ---------- screens ----------
+function dialog(msg, okLabel, cancelLabel) {
+  return new Promise(res => {
+    const el = document.createElement("div");
+    el.className = "modal";
+    el.innerHTML = `<div class="box" dir="rtl"><p>${esc(msg)}</p><div class="row"><button class="big-btn" data-ok>${esc(okLabel)}</button>${cancelLabel ? `<button class="icon-btn" data-no>${esc(cancelLabel)}</button>` : ""}</div></div>`;
+    document.body.appendChild(el);
+    el.querySelector("[data-ok]").onclick = () => { el.remove(); res(true); };
+    const no = el.querySelector("[data-no]");
+    no && (no.onclick = () => { el.remove(); res(false); });
+  });
+}
+
+function home() {
+  cancelAnimationFrame(anim);
+  state.me && state.kids[state.me] ? hub(state.me) : welcome();
+}
+
+// First open on a device: the kid writes his name and picks his grade.
+function welcome() {
+  refresh = null;
+  let grade = 0;
+  app.innerHTML = `<div class="screen"><div class="center">
+    <svg viewBox="-40 -105 80 110" style="width:120px;height:120px">${kidSvg("#2f6fe4")}</svg>
+    <h1>שָׁלוֹם! מָה הַשֵּׁם שֶׁלְּךָ?</h1>
+    <input type="text" id="nm" class="name-in" autocomplete="off" aria-label="השם שלך">
+    <h2>בְּאֵיזוֹ כִּתָּה אַתָּה?</h2>
+    <div class="seg grades">${GRADES.map((g, i) => `<button data-g="${i + 1}">כִּתָּה ${g}׳</button>`).join("")}</div>
+    <button class="big-btn" id="start" disabled>יַאללָה, מַתְחִילִים! ▸</button>
+    <button class="link-btn" id="parent">כניסה להורים</button>
+  </div></div>`;
+  $("#parent").onclick = parentGate;
+  const check = () => $("#start").disabled = !($("#nm").value.trim() && grade);
+  $("#nm").oninput = check;
+  app.querySelectorAll("[data-g]").forEach(b => b.onclick = () => {
+    grade = +b.dataset.g;
+    app.querySelectorAll("[data-g]").forEach(x => x.classList.toggle("on", x === b));
+    check();
+  });
+  $("#start").onclick = () => {
+    const name = $("#nm").value.trim();
+    // a kid who already has a profile (on this device, or one of ours) keeps his stories and candies
+    let id = Object.keys(state.kids).find(k => plain(state.kids[k].name) === plain(name));
+    const known = !id && remote.kids.find(k => plain(k.name) === plain(name));  // registered on another device
+    if (known) { id = known.id; state.kids[id] = { name, grade, color: "#2f6fe4", level: levelForGrade(grade), candies: 0, levelCandies: {}, runs: {} }; }
+    if (!id) {
+      id = "k-" + newId();
+      state.kids[id] = { name, grade, color: ["#2f6fe4", "#f08a24", "#2e9e5b", "#8a4fd8"][Object.keys(state.kids).length % 4], level: levelForGrade(grade), candies: 0, levelCandies: {}, runs: {} };
+    }
+    Object.assign(state.kids[id], { name, grade });
+    if (state.kids[id].level !== levelForGrade(grade)) state.kids[id].level = levelForGrade(grade);
+    state.me = id; save();
+    registerKid();
+    hub(id);
+  };
+  $("#nm").focus();
+}
+
+function hub(kidId) {
+  const kid = state.kids[kidId];
+  refresh = () => hub(kidId);
+  const lib = library(kidId);
+  const newLessons = lib.lessons.filter(l => !storiesOf(l).every(s => isDone(kidId, s.id))).length;
+  app.innerHTML = `<div class="screen">
+    <div class="topbar"><h1>שָׁלוֹם ${esc(kid.name)}!</h1><span class="spacer"></span>${candyBar(kid)}</div>
+    <div class="hub">
+      <button class="hub-btn" id="go-lessons"><span class="e">📝</span>שיעורים
+        <span class="s">${newLessons ? `<span class="badge">${newLessons} חדש</span>` : lib.lessons.length ? "קראת הכל 👍" : "עוד אין שיעורים"}</span></button>
+      <button class="hub-btn" id="go-books"><span class="e">📚</span>ספרים
+        <span class="s">${lib.books.length} ספרים על המדף</span></button>
+    </div>
+    ${remote.slow && !remote.loaded ? `<p class="help">שיעורים חדשים לא נטענו עדיין. בדקו שיש אינטרנט.</p>` : ""}
+    <span class="spacer"></span>
+    <div class="actions row"><button class="icon-btn" id="mute">${state.muted ? "🔇 צליל כבוי" : "🔊 צליל"}</button><button class="icon-btn" id="parent">👨‍👩‍👦 כניסה להורים</button></div>
+  </div>`;
+  $("#mute").onclick = () => { state.muted = !state.muted; save(); hub(kidId); };
+  $("#parent").onclick = parentGate;
+  $("#go-lessons").onclick = () => lessonList(kidId);
+  $("#go-books").onclick = () => bookShelf(kidId);
+}
+
+function storyButton(kidId, s, i, open, sub) {
+  const runs = runsOf(kidId, s.id), last = runs[runs.length - 1];
+  return `<button class="story-btn ${last ? "done" : ""}" data-i="${i}" ${open ? "" : "disabled"}>
+    <span class="t">${esc(s.title)}</span>
+    <span class="s">${last ? `✓ קראת · ${last.firstTry} מתוך ${last.questions} נכון בפעם הראשונה` : open ? (sub || "חדש") : "🔒 נפתח אחרי הפרק הקודם"}</span>
+  </button>`;
+}
+
+function lessonList(kidId) {
+  const kid = state.kids[kidId];
+  refresh = () => lessonList(kidId);
+  const lessons = library(kidId).lessons;
+  app.innerHTML = `<div class="screen">
+    <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📝 השיעורים של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
+    ${lessons.length ? "" : `<div class="gate">עוד אין שיעורים. כשאבא או אמא יעלו שיעור, הוא יופיע כאן.</div>`}
+    <div class="stories">${lessons.map((l, i) => storyButton(kidId, storiesOf(l)[0], i, true,
+      `<span class="badge">חדש!</span>${l.createdAt ? " · " + new Date(l.createdAt).toLocaleDateString("he-IL") : ""}`)).join("")}</div>
+  </div>`;
+  $("#back").onclick = () => hub(kidId);
+  app.querySelectorAll("[data-i]").forEach(b => b.onclick = () => {
+    const l = lessons[+b.dataset.i];
+    openStory(kidId, storiesOf(l)[0], () => lessonList(kidId), null);
+  });
+}
+
+function bookShelf(kidId) {
+  const kid = state.kids[kidId];
+  refresh = () => bookShelf(kidId);
+  const books = library(kidId).books;
+  app.innerHTML = `<div class="screen">
+    <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📚 המדף של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
+    <div class="stories">${books.map((bk, i) => {
+      const st = storiesOf(bk), read = st.filter(s => isDone(kidId, s.id)).length;
+      return `<button class="story-btn book-btn ${read === st.length ? "done" : ""}" data-i="${i}">
+        <span class="t">📖 ${esc(bk.title)}</span>
+        <span class="s">${read === st.length ? "✓ סיימת את הספר!" : read ? `קראת ${read} מתוך ${st.length} פרקים` : `${st.length} פרקים · ספר חדש`}</span></button>`;
+    }).join("")}</div>
+  </div>`;
+  $("#back").onclick = () => hub(kidId);
+  app.querySelectorAll("[data-i]").forEach(b => b.onclick = () => bookChapters(kidId, books[+b.dataset.i].id));
+}
+
+function bookChapters(kidId, bookId) {
+  const kid = state.kids[kidId];
+  const bk = library(kidId).books.find(b => b.id === bookId);
+  if (!bk) return bookShelf(kidId);
+  refresh = () => bookChapters(kidId, bookId);
+  const st = storiesOf(bk);
+  const isOpen = i => i === 0 || st[i].start || isDone(kidId, st[i - 1].id);
+  const nextIdx = st.findIndex((s, i) => !isDone(kidId, s.id) && isOpen(i));
+  const short = t => t.includes(": ") ? t.split(": ").slice(1).join(": ") : t;
+  app.innerHTML = `<div class="screen">
+    <div class="topbar"><button class="icon-btn" id="back">→ למדף</button><h2>📖 ${esc(bk.title)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
+    ${nextIdx >= 0 ? `<div class="actions"><button class="big-btn" id="cont">${nextIdx ? "להמשיך לקרוא ▸" : "להתחיל לקרוא ▸"}</button></div>` : ""}
+    <div class="stories">${st.map((s, i) => storyButton(kidId, { ...s, title: `פרק ${i + 1}: ${short(s.title)}` }, i, isOpen(i), "פרק חדש")).join("")}</div>
+  </div>`;
+  $("#back").onclick = () => bookShelf(kidId);
+  const go = i => openStory(kidId, st[i], () => bookChapters(kidId, bookId), i + 1 < st.length ? () => go(i + 1) : null);
+  nextIdx >= 0 && ($("#cont").onclick = () => go(nextIdx));
+  app.querySelectorAll("[data-i]").forEach(b => b.onclick = () => go(+b.dataset.i));
+}
+
+async function openStory(kidId, stub, back, next) {
+  refresh = null;
+  app.innerHTML = `<div class="screen"><div class="center"><div class="huge">📖</div><p>פותח...</p></div></div>`;
+  try { read(kidId, await loadStory(stub), back, next); }
+  catch (e) {
+    app.innerHTML = `<div class="screen"><div class="center"><p>לא הצלחתי לפתוח את הפרק. בדקו שיש אינטרנט ונסו שוב.</p>
+      <button class="big-btn" id="b">חזרה</button></div></div>`;
+    $("#b").onclick = back;
+  }
+}
+
+function shuffle(n) { const a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function read(kidId, story, back, nextStory) {
+  const kid = state.kids[kidId];
+  const run = { date: Date.now(), reads: [], qs: [] };
+  let stepIdx = 0, shown = [], segStart = 0;  // segStart: first sentence read since the last question
+  app.innerHTML = `<div class="screen">
+    <div class="topbar"><button class="icon-btn" id="back">→ יציאה</button><span class="spacer"></span>${candyBar(kid)}</div>
+    <div class="page" id="page"></div>
+    <div id="controls" class="actions"></div>
+    ${trackHtml(kid.color)}
+  </div>`;
+  $("#back").onclick = back;
+  resetScene();
+
+  function renderPage(extra = "") {
+    $("#page").innerHTML = shown.map((t, i) => `<p class="sent ${i < shown.length - 1 || extra ? "old" : ""}">${esc(t)}</p>`).join("") + extra;
+    const p = $("#page"); p.scrollTop = p.scrollHeight;
+  }
+
+  function next() {
+    if (stepIdx >= story.steps.length) return finish();
+    const st = story.steps[stepIdx++];
+    if (st.text) {
+      shown.push(st.text); renderPage();
+      const t0 = performance.now();
+      $("#controls").innerHTML = `<button class="big-btn" id="ok">קָרָאתִי ✓</button>`;
+      $("#ok").onclick = () => { run.reads.push({ text: st.text, ms: Math.round(performance.now() - t0), words: st.text.split(/\s+/).length }); next(); };
+    } else ask(st);
+  }
+
+  // While a question is up, the text is hidden (no scrolling back to find the answer).
+  // "Read again" shows the part read since the last question, then returns to the same question.
+  function ask(st) {
+    const order = shuffle(st.options.length);
+    const seg = shown.slice(segStart).length ? shown.slice(segStart) : shown;
+    $("#page").innerHTML = `<div id="qa"><p class="q">${esc(st.question)}</p><div class="opts">${order.map(k => `<button class="opt" data-k="${k}">${esc(st.options[k])}</button>`).join("")}</div></div>
+      <div id="again" hidden>${seg.map(t => `<p class="sent re">${esc(t)}</p>`).join("")}</div>`;
+    $("#page").scrollTop = 0;
+    const askControls = () => {
+      $("#controls").innerHTML = `<button class="icon-btn" id="reread">📖 לִקְרֹא שׁוּב</button>`;
+      $("#reread").onclick = () => {
+        rec.rereads++;
+        $("#qa").hidden = true; $("#again").hidden = false; $("#page").scrollTop = 0;
+        $("#controls").innerHTML = `<button class="big-btn" id="backq">קָרָאתִי, לַשְּׁאֵלָה ✓</button>`;
+        $("#backq").onclick = () => {
+          $("#again").hidden = true; $("#qa").hidden = false; $("#page").scrollTop = 0;
+          if (!rec.attempts) t0 = performance.now();
+          askControls();
+        };
+      };
+    };
+    askControls();
+    let t0 = performance.now();
+    const rec = { question: st.question, attempts: 0, ms: 0, wrong: [], rereads: 0 };
+    let busy = false;
+    $("#page").querySelectorAll(".opt").forEach(b => b.onclick = () => {
+      if (busy) return;
+      busy = true;
+      rec.attempts++;
+      if (rec.attempts === 1) rec.ms = Math.round(performance.now() - t0);
+      if (+b.dataset.k === st.answer) {
+        b.classList.add("right"); beep("good"); addCandy(kid, 1, b);
+        $("#page").querySelectorAll(".opt").forEach(o => o.disabled = true);
+        $("#controls").innerHTML = "";
+        segStart = shown.length;
+        animateCorrect(() => { run.qs.push(rec); next(); });
+      } else {
+        b.classList.add("wrong"); b.disabled = true; beep("bad"); addCandy(kid, -1, b);
+        rec.wrong.push(st.options[+b.dataset.k]);
+        animateWrong(() => { busy = false; });
+      }
+    });
+  }
+
+  function finish() {
+    const firstTry = run.qs.filter(q => q.attempts === 1).length;
+    Object.assign(run, { firstTry, questions: run.qs.length });
+    const preview = story.id === "preview";  // the parent trying a draft: not counted
+    if (!preview) {
+      (kid.runs[story.id] = kid.runs[story.id] || []).push(run);
+      if (kid.runs[story.id].length > 20) kid.runs[story.id].shift();
+      save();
+    }
+    // copy to shared storage (without the sentence texts) so the parent sees it on the phone
+    if (remote.db && !preview) remote.db.collection("runs").add({ kid: kidId, storyId: story.id, title: story.title, ...run,
+      reads: run.reads.map(r => ({ ms: r.ms, words: r.words })) }).catch(() => {});
+    app.innerHTML = `<div class="screen"><div class="topbar"><span class="spacer"></span>${candyBar(kid)}</div>
+      <div class="center"><div class="huge">${firstTry === run.qs.length ? "🏆" : "⭐"}</div>
+        <h1>סִיַּמְתָּ!</h1>
+        <p class="muted" style="font-size:22px">${firstTry} מתוך ${run.qs.length} שאלות נכון בפעם הראשונה</p>
+        <div class="row">${nextStory ? `<button class="big-btn" id="nextStory">לפרק הבא</button>` : ""}
+          <button class="icon-btn" id="list">חזרה לרשימה</button></div></div></div>`;
+    nextStory && ($("#nextStory").onclick = nextStory);
+    $("#list").onclick = back;
+  }
+  next();
+}
+
+// ---------- parent ----------
+function parentGate() {
+  refresh = null;
+  const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+  app.innerHTML = `<div class="screen"><div class="topbar"><button class="icon-btn" id="back">→ חזרה</button></div>
+    <div class="center"><h2>כניסה להורים</h2><p>כמה זה ${a} × ${b}?</p>
+    <form id="f" class="row"><input type="number" id="ans" inputmode="numeric" aria-label="תשובה"><button class="big-btn">כניסה</button></form>
+    <p id="err" class="danger" hidden>לא נכון, נסה שוב.</p></div></div>`;
+  $("#back").onclick = home;
+  $("#f").onsubmit = e => { e.preventDefault(); +$("#ans").value === a * b ? parent() : ($("#err").hidden = false); };
+  $("#ans").focus();
+}
+
+const sec = ms => (ms / 1000).toFixed(1) + " ש׳";
+function allStories(kidId) {
+  const lib = library(kidId);
+  return [...lib.lessons, ...lib.books].flatMap(storiesOf);
+}
+function kidStats(kidId) {
+  const ids = new Set([...Object.keys(K(kidId).runs), ...remote.runs.filter(r => r.kid === kidId).map(r => r.storyId)]);
+  const runs = [...ids].flatMap(id => runsOf(kidId, id));
+  const qs = runs.flatMap(r => r.qs), reads = runs.flatMap(r => r.reads);
+  const first = qs.filter(q => q.attempts === 1).length;
+  const guesses = qs.filter(q => q.ms < FAST_MS || q.attempts >= 3).length;
+  const words = reads.reduce((s, r) => s + r.words, 0), ms = reads.reduce((s, r) => s + r.ms, 0);
+  const skims = reads.filter(r => r.ms < r.words * SKIM_MS_PER_WORD).length;
+  return { ids: [...ids], qs: qs.length, first, guesses, readMs: reads.length ? ms / reads.length : 0, skims, reads: reads.length };
+}
+
+function parent() {
+  refresh = parent;
+  const order = allKidIds().sort((a, b) => (b === state.me) - (a === state.me));
+  const kidsBlocks = order.map(id => [id, K(id)]).map(([id, kid]) => {
+    const s = kidStats(id), all = allStories(id);
+    const titleOf = sid => (all.find(x => x.id === sid) || {}).title || (remote.runs.find(r => r.storyId === sid) || {}).title || sid;
+    const rows = s.ids.map(sid => ({ sid, runs: runsOf(id, sid) })).sort((a, b) => b.runs[b.runs.length - 1].date - a.runs[a.runs.length - 1].date).map(({ sid, runs }) => {
+      const r = runs[runs.length - 1];
+      const total = r.reads.reduce((a, x) => a + x.ms, 0);
+      const qRows = r.qs.map(q => {
+        const guess = q.ms < FAST_MS || q.attempts >= 3;
+        return `<tr><td>${esc(q.question)}</td><td class="num">${sec(q.ms)}</td>
+          <td>${q.attempts === 1 ? '<span class="tag good">נכון בפעם הראשונה</span>' : `<span class="tag bad">${q.attempts} ניסיונות</span>`}
+          ${guess ? ' <span class="tag warn">אולי ניחש</span>' : ""}${q.rereads ? ` <span class="tag">📖 קרא שוב${q.rereads > 1 ? " ×" + q.rereads : ""}</span>` : ""}</td>
+          <td>${q.wrong.length ? esc(q.wrong.join(", ")) : ""}</td></tr>`;
+      }).join("");
+      return `<details><summary style="cursor:pointer"><b>${esc(titleOf(sid))}</b> <span class="muted" style="font-size:14px">· ${new Date(r.date).toLocaleDateString("he-IL")} · ${r.firstTry}/${r.questions} נכון בפעם הראשונה · קריאה ${sec(total)} · נקרא ${runs.length} פעמים</span></summary>
+        <div class="table-wrap"><table><thead><tr><th>שאלה</th><th>זמן לתשובה</th><th>תוצאה</th><th>טעה ב־</th></tr></thead><tbody>${qRows}</tbody></table></div></details>`;
+    }).join("") || `<p class="muted">עוד לא קרא כלום.</p>`;
+    return `<section class="panel">
+      <div class="row"><h2>${esc(kid.name)}</h2><span class="muted">כיתה ${GRADES[(kid.grade || 1) - 1]}׳${id === state.me ? ` · הילד של המכשיר הזה · ${kid.levelCandies[kid.level] || 0} סוכריות` : ""}</span></div>
+      <div class="stats">
+        <div class="stat"><b>${s.ids.length}/${all.length}</b><span>שיעורים ופרקים שקרא</span></div>
+        <div class="stat"><b>${s.qs ? Math.round(100 * s.first / s.qs) : 0}%</b><span>נכון בפעם הראשונה (${s.first} מתוך ${s.qs})</span></div>
+        <div class="stat"><b>${s.guesses}</b><span>שאלות שאולי ניחש (תשובה תוך פחות מ־1.5 שניות, או 3 ניסיונות ומעלה)</span></div>
+        <div class="stat"><b>${s.reads ? sec(s.readMs) : "—"}</b><span>זמן ממוצע לקריאת משפט</span></div>
+        <div class="stat"><b>${s.skims}</b><span>משפטים שעבר מהר מדי (כנראה לא קרא)</span></div>
+      </div>
+      ${id !== state.me ? "" : `<div class="row"><button class="icon-btn" id="switch">🔁 להחליף ילד במכשיר הזה</button><button class="icon-btn" data-reset="${id}">↺ להתחיל מהתחלה עם ${esc(kid.name)}</button>
+        <span hidden id="confirm-${id}">הסוכריות והנתונים של ${esc(kid.name)} בטאבלט הזה יימחקו. בטוח? <button class="icon-btn danger" data-yes="${id}">כן, מהתחלה</button> <button class="icon-btn" data-no="${id}">ביטול</button></span></div>`}
+      ${rows}
+    </section>`;
+  }).join("");
+
+  const canUpload = remote.db && remote.sample;
+  const mine = remote.items.slice().sort((a, b) => b.createdAt - a.createdAt);
+  app.innerHTML = `<div class="screen parent">
+    <div class="topbar"><button class="icon-btn" id="back">→ יציאה</button><h2>מסך הורים</h2></div>
+    <section class="panel">
+      <h2>➕ להעלות שיעור או ספר</h2>
+      ${canUpload ? `<div class="row"><button class="big-btn" id="new-up">📷 העלאה חדשה</button></div>`
+        : `<p class="note">העלאה עובדת רק כשהאפליקציה פתוחה מתוך Claude, כשאתה מחובר לחשבון שלך.</p>`}
+      ${remote.drafts.length ? `<h3 style="margin:6px 0 0">טיוטות שלא נשלחו</h3><div class="items">${remote.drafts.sort((a, b) => b.updatedAt - a.updatedAt).map(d => `
+        <div class="item"><span class="t">${esc(d.title || "ללא שם")}</span><span class="muted">${d.kind === "book" ? "📚 ספר" : "📝 שיעור"} · ${esc(K(d.kid).name)} · ${(d.pages || []).length} דפים</span>
+        <span class="spacer"></span>${canUpload ? `<button class="icon-btn" data-draft="${d.id}">להמשיך</button>` : ""} <button class="icon-btn danger" data-deldraft="${d.id}">מחיקה</button></div>`).join("")}</div>` : ""}
+      <h3 style="margin:6px 0 0">מה שכבר נשלח</h3>
+      ${mine.length ? `<div class="items">${mine.map(i => `
+        <div class="item"><span class="t">${esc(i.title)}</span><span class="muted">${i.kind === "book" ? `📚 ספר · ${i.chapters.length} פרקים` : "📝 שיעור"} · ${esc(K(i.kid).name)} · ${new Date(i.createdAt).toLocaleDateString("he-IL")}</span>
+        <span class="spacer"></span>${canUpload ? `<button class="icon-btn" data-edit="${i.id}">עריכה</button>` : ""} <button class="icon-btn danger" data-del="${i.id}">מחיקה</button></div>`).join("")}</div>`
+        : `<p class="muted">עוד לא העלית כלום.</p>`}
+    </section>
+    <p class="muted">"אולי ניחש" ו"עבר מהר מדי" הם הערכה לפי זמנים, לא בדיקה בטוחה.</p>
+    ${kidsBlocks}</div>`;
+  $("#back").onclick = home;
+  canUpload && ($("#new-up").onclick = () => uploadStart(newDraft()));
+  app.querySelectorAll("[data-draft]").forEach(b => b.onclick = () => {
+    const d = remote.drafts.find(x => x.id === b.dataset.draft);
+    d.chapters && d.chapters.length ? uploadReview(structuredClone(d)) : uploadStart(structuredClone(d));
+  });
+  app.querySelectorAll("[data-deldraft]").forEach(b => b.onclick = async () => { if (await dialog("למחוק את הטיוטה?", "כן, למחוק", "ביטול")) remote.db.doc("drafts/" + b.dataset.deldraft).delete(); });
+  app.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+    const it = remote.items.find(x => x.id === b.dataset.del);
+    if (await dialog(`למחוק את "${it.title}"? הילד לא יראה אותו יותר.`, "כן, למחוק", "ביטול")) deleteItem(it).catch(() => dialog("המחיקה נכשלה. בדוק שיש אינטרנט.", "אישור"));
+  });
+  app.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => editItem(remote.items.find(x => x.id === b.dataset.edit)));
+  $("#switch") && ($("#switch").onclick = async () => { if (await dialog("להחליף ילד? בפתיחה הבאה הילד יכתוב את השם שלו מחדש. הסוכריות וההתקדמות נשמרות.", "כן, להחליף", "ביטול")) { state.me = null; save(); welcome(); } });
+  app.querySelectorAll("[data-reset]").forEach(b => b.onclick = () => $("#confirm-" + b.dataset.reset).hidden = false);
+  app.querySelectorAll("[data-no]").forEach(b => b.onclick = () => $("#confirm-" + b.dataset.no).hidden = true);
+  app.querySelectorAll("[data-yes]").forEach(b => b.onclick = () => {
+    const k = state.kids[b.dataset.yes]; Object.assign(k, { level: levelForGrade(k.grade || 1), candies: 0, levelCandies: {}, runs: {} }); save(); parent();
+  });
+}
+
+async function deleteItem(it) {
+  const snap = await remote.db.collection(`items/${it.id}/chapters`).get();
+  await remote.db.doc("items/" + it.id).delete();
+  for (const d of snap.docs) await remote.db.doc(`items/${it.id}/chapters/${d.id}`).delete();
+}
+
+// ---------- parent upload: photos/PDF -> text with niqqud -> questions -> review -> send ----------
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+function newDraft() { return { id: newId(), kid: state.me || "big", kind: "lesson", title: "", pages: [], chapters: [], updatedAt: Date.now() }; }
+async function saveDraft(d) {
+  d.updatedAt = Date.now();
+  try { await remote.db.doc("drafts/" + d.id).set(JSON.parse(JSON.stringify(d))); } catch (e) { /* draft is a convenience */ }
+}
+let pending = [];  // page images picked on this device, not yet copied: [{blob, url, name}]
+
+function uploadStart(d) {
+  refresh = null;
+  const render = () => {
+    app.innerHTML = `<div class="screen parent">
+      <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>העלאה חדשה</h2></div>
+      <section class="panel">
+        <b>למי?</b>
+        <div class="seg">${allKidIds().map(id => `<button data-k="${id}" class="${d.kid === id ? "on" : ""}">${esc(K(id).name)} · כיתה ${GRADES[(K(id).grade || 1) - 1]}׳</button>`).join("")}</div>
+        <b>מה מעלים?</b>
+        <div class="seg"><button data-t="lesson" class="${d.kind === "lesson" ? "on" : ""}">📝 שיעור</button><button data-t="book" class="${d.kind === "book" ? "on" : ""}">📚 ספר</button></div>
+        <p class="help">${d.kind === "book" ? "ספר מחולק לפרקים, והילד קורא פרק אחרי פרק." : "שיעור הוא טקסט אחד. השיעור החדש מופיע ראשון ברשימה."}</p>
+        <label for="ttl"><b>שם</b> <span class="muted">(אפשר להשאיר ריק, Claude ימציא)</span></label>
+        <input type="text" id="ttl" class="wide" value="${esc(d.title)}">
+      </section>
+      <section class="panel">
+        <b>הדפים</b>
+        <p class="help">דף אחד בכל תמונה, ישר ובאור טוב. אפשר לצלם כמה פעמים ולהוסיף עוד. סדר התמונות = סדר הדפים.</p>
+        <div class="row">
+          <span class="file-btn big-btn">📷 לצלם דף<input type="file" accept="image/*" capture="environment" id="cam"></span>
+          <span class="file-btn icon-btn">🖼️ לבחור תמונות או PDF<input type="file" accept="image/*,application/pdf" multiple id="pick"></span>
+        </div>
+        ${d.pages.length ? `<p class="help">✓ ${d.pages.length} דפים כבר הועתקו בטיוטה הזאת. התמונות החדשות יתווספו אחריהם.</p>` : ""}
+        <div class="thumbs">${pending.map((p, i) => `<div class="thumb"><img src="${p.url}" alt="דף ${d.pages.length + i + 1}"><button data-rm="${i}" aria-label="להסיר">✕</button>דף ${d.pages.length + i + 1}</div>`).join("")}</div>
+        <p id="pdfmsg" class="help" hidden>פותח את ה-PDF...</p>
+      </section>
+      <div class="actions"><button class="big-btn" id="go" ${pending.length || d.pages.length ? "" : "disabled"}>${pending.length ? `להעתיק ${pending.length} דפים ▸` : "המשך ▸"}</button></div>
+    </div>`;
+    $("#back").onclick = () => { pending = []; parent(); };
+    app.querySelectorAll("[data-k]").forEach(b => b.onclick = () => { d.title = $("#ttl").value; d.kid = b.dataset.k; render(); });
+    app.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { d.title = $("#ttl").value; d.kind = b.dataset.t; render(); });
+    app.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { d.title = $("#ttl").value; URL.revokeObjectURL(pending[+b.dataset.rm].url); pending.splice(+b.dataset.rm, 1); render(); });
+    const add = async files => {
+      d.title = $("#ttl").value;
+      for (const f of files) {
+        if (f.type === "application/pdf" || /\.pdf$/i.test(f.name)) {
+          $("#pdfmsg").hidden = false;
+          try { for (const blob of await pdfPages(f)) pending.push({ blob, url: URL.createObjectURL(blob) }); }
+          catch (e) { await dialog("לא הצלחתי לפתוח את ה-PDF. אפשר לצלם את הדפים במקום.", "אישור"); }
+        } else pending.push({ blob: f, url: URL.createObjectURL(f) });
+      }
+      render();
+    };
+    $("#cam").onchange = e => add([...e.target.files]);
+    $("#pick").onchange = e => add([...e.target.files]);
+    $("#go").onclick = () => { d.title = $("#ttl").value.trim(); uploadWork(d); };
+  };
+  render();
+}
+
+let pdfjsReady = null;
+function loadPdfJs() {
+  const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  return pdfjsReady = pdfjsReady || new Promise((ok, bad) => {
+    const s = document.createElement("script");
+    s.src = base + "pdf.min.js";
+    s.onload = () => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + "pdf.worker.min.js"; ok(window.pdfjsLib); };
+    s.onerror = () => { pdfjsReady = null; bad(new Error("pdf.js")); };
+    document.head.appendChild(s);
+  });
+}
+async function pdfPages(file) {
+  const lib = await loadPdfJs();
+  const pdf = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const out = [];
+  for (let n = 1; n <= pdf.numPages; n++) {
+    const page = await pdf.getPage(n), v0 = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: 2000 / v0.width });
+    const c = document.createElement("canvas"); c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    out.push(await new Promise(r => c.toBlob(r, "image/jpeg", .9)));
+  }
+  return out;
+}
+
+// Claude sees each image at about 1.2 megapixels, too small for niqqud on a whole page,
+// so each page goes as overlapping horizontal strips.
+async function pageStrips(blob, count) {
+  const img = await createImageBitmap(blob, { imageOrientation: "from-image" });
+  const w = img.width, h = img.height, ov = h * .04, out = [];
+  const scale = Math.min(1, 2200 / w);
+  for (let k = 0; k < count; k++) {
+    const y0 = Math.max(0, k * h / count - ov), y1 = Math.min(h, (k + 1) * h / count + ov);
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * scale); c.height = Math.round((y1 - y0) * scale);
+    c.getContext("2d").drawImage(img, 0, y0, w, y1 - y0, 0, 0, c.width, c.height);
+    out.push(await new Promise(r => c.toBlob(r, "image/jpeg", .9)));
+  }
+  img.close && img.close();
+  return out;
+}
+
+const PROMPT_PAGE = (kind, n) => `The ${n} images are horizontal strips of ONE photographed page of a Hebrew ${kind === "book" ? "children's book" : "school homework sheet"}, in order from top to bottom. Neighbouring strips overlap a little: do not repeat the lines that appear in two strips.
+
+Copy the Hebrew text of the page exactly, word for word, in reading order.
+- Keep the niqqud exactly as printed. Where the printed text has no niqqud or only partial niqqud, add full correct niqqud, the way a grade 1-2 reader is printed.
+- Skip page numbers, running headers and footers, and text inside illustrations.${kind === "book" ? "" : "\n- This is homework: copy only the reading passage(s) and their titles. Skip the teacher's exercises, questions, instructions and answer lines."}
+- Put each paragraph on its own line. Put a chapter title or heading on its own line starting with "## ".
+- If you cannot read a word for sure, write your best guess followed by [?].
+Reply with only the page text, no comments. If the page has no text to read, reply with exactly: (אין טקסט)`;
+
+const PROMPT_STEPS = (kidId, text) => `You are preparing a reading-comprehension lesson for ${K(kidId).name}, an Israeli boy in grade ${K(kidId).grade || 2} (about ${(K(kidId).grade || 2) + 5} years old). He can sound out words but often does not understand what he read. He reads one sentence at a time and answers a question every few sentences.
+
+Below is a Hebrew text with niqqud.
+1. Split it into sentences. Keep every word exactly as given, with the same niqqud. Do not rewrite, shorten, explain or add anything. Remove a [?] mark only if you are sure of the word. Drop lines starting with "## " from the sentences (they are titles).
+2. After every 2 to 4 sentences add one comprehension question about what was just read. At the end add 1 or 2 questions about the whole text (main idea, a character's feelings, why something happened).
+   Each question: short, natural spoken Israeli Hebrew (say "מְכוֹנִית אֲדֻמָּה", avoid stiff or translated phrasing), with full niqqud. Give exactly 1 right answer and 3 wrong answers, all with full niqqud, of similar length and plausible, so the question cannot be answered without reading the text. Mix kinds: who, what, where, why, the order of events, and the meaning of a word from context.
+3. Give a short title with niqqud (use the text's own heading if it has one).
+
+Reply with JSON only, in this shape:
+{"title": "...", "steps": [{"t": "a sentence"}, {"q": "a question", "right": "...", "wrong": ["...", "...", "..."]}]}
+
+The text:
+${text}`;
+
+function splitChapters(d) {
+  const text = d.pages.filter(p => p.trim() !== "(אין טקסט)").join("\n").trim();
+  const words = s => s.split(/\s+/).filter(Boolean).length;
+  if (d.kind === "lesson") return [text];
+  // split at headings; with no headings, cut every ~350 words at a paragraph end
+  let parts = [], cur = [];
+  for (const line of text.split("\n")) {
+    if (line.startsWith("## ") && cur.some(l => !l.startsWith("## "))) { parts.push(cur.join("\n")); cur = []; }
+    cur.push(line);
+  }
+  if (cur.length) parts.push(cur.join("\n"));
+  if (parts.length > 1 && !parts[0].startsWith("## ") && words(parts[0]) < 30) { parts[1] = parts[0] + "\n" + parts[1]; parts.shift(); }
+  const out = [];
+  for (const p of parts) {
+    if (words(p) <= 900 && (parts.length > 1 || words(p) <= 450)) { out.push(p); continue; }
+    let chunk = [];
+    for (const para of p.split("\n")) {
+      chunk.push(para);
+      if (words(chunk.join(" ")) >= 350) { out.push(chunk.join("\n")); chunk = []; }
+    }
+    if (chunk.length) words(chunk.join(" ")) < 80 && out.length ? out[out.length - 1] += "\n" + chunk.join("\n") : out.push(chunk.join("\n"));
+  }
+  return out.filter(p => p.trim());
+}
+
+const SAMPLE_ERR = {
+  not_granted: "לא אישרת ל-Claude לעבוד מתוך האפליקציה. אפשר לאשר בפעם הבאה שתנסה.",
+  rate_limited: "Claude עמוס כרגע או שנגמרה מכסת השימוש. נסה שוב עוד קצת.",
+  session_expired: "צריך להתחבר שוב ל-Claude.",
+  image_rejected: "אחת התמונות לא מתאימה. נסה לצלם אותה שוב.",
+  refused: "Claude לא הסכים לעבד את הטקסט הזה.",
+  invalid_json: "התשובה של Claude הגיעה לא שלמה. נסה שוב.",
+};
+const errText = e => SAMPLE_ERR[e && e.code] || "משהו נכשל בדרך. בדוק שיש אינטרנט ונסה שוב.";
+
+async function uploadWork(d) {
+  refresh = null;
+  let ctl = new AbortController(), stopped = false;
+  const lim = await remote.sample.limits().catch(() => null);
+  const strips = Math.max(1, Math.min(3, (lim && lim.images && lim.images.maxCount) || 1));
+  const totalPages = d.pages.length + pending.length;
+  app.innerHTML = `<div class="screen parent">
+    <div class="topbar"><h2>Claude עובד על זה...</h2></div>
+    <section class="panel"><div class="bar"><i id="bar" style="width:0"></i></div><p id="now"></p><ul class="log" id="log"></ul>
+      <p class="help">זה לוקח בערך חצי דקה לכל דף. אפשר להשאיר את הטלפון פתוח על המסך הזה. אם נעצר באמצע, הדפים שכבר הועתקו נשמרים בטיוטה.</p></section>
+    <div class="actions"><button class="icon-btn" id="stop">עצור</button></div></div>`;
+  const now = t => $("#now") && ($("#now").textContent = t);
+  const log = t => $("#log") && $("#log").insertAdjacentHTML("beforeend", `<li>${esc(t)}</li>`);
+  const bar = f => $("#bar") && ($("#bar").style.width = Math.round(f * 100) + "%");
+  $("#stop").onclick = () => { stopped = true; ctl.abort(); };
+  const fail = async (msg) => {
+    await saveDraft(d);
+    app.innerHTML = `<div class="screen parent"><div class="center"><p>${esc(msg)}</p>
+      <p class="help">מה שכבר הועתק נשמר בטיוטה (${d.pages.length} דפים). אפשר להמשיך אותה ממסך ההורים.</p>
+      <button class="big-btn" id="b">למסך ההורים</button></div></div>`;
+    $("#b").onclick = parent;
+  };
+  try {
+    // 1. copy each new page
+    while (pending.length) {
+      const p = pending[0], n = d.pages.length + 1;
+      now(`מעתיק דף ${n} מתוך ${totalPages}...`);
+      const imgs = await pageStrips(p.blob, strips);
+      const { text } = await remote.sample(PROMPT_PAGE(d.kind, imgs.length), { images: imgs, signal: ctl.signal });
+      d.pages.push(text.trim());
+      URL.revokeObjectURL(p.url); pending.shift();
+      log(`דף ${n} הועתק (${text.split(/\s+/).length} מילים)`);
+      bar(.6 * d.pages.length / totalPages);
+      await saveDraft(d);
+    }
+    // 2. split into chapters and write questions
+    const parts = splitChapters(d);
+    if (!parts.length) return fail("לא מצאתי טקסט בדפים האלה.");
+    d.chapters = [];
+    for (let i = 0; i < parts.length; i++) {
+      now(parts.length > 1 ? `כותב שאלות לפרק ${i + 1} מתוך ${parts.length}...` : "כותב שאלות הבנה...");
+      const out = await remote.sample.json(PROMPT_STEPS(d.kid, parts[i]), { signal: ctl.signal });
+      const steps = (out.steps || []).map(s => s.q ? { question: s.q, options: [s.right, ...(s.wrong || [])].filter(Boolean), answer: 0 } : { text: s.t }).filter(s => s.text || s.options.length >= 2);
+      d.chapters.push({ title: out.title || `פרק ${i + 1}`, steps });
+      log(`${parts.length > 1 ? `פרק ${i + 1}` : "הטקסט"}: ${steps.filter(s => s.text).length} משפטים, ${steps.filter(s => s.question).length} שאלות`);
+      bar(.6 + .4 * (i + 1) / parts.length);
+      await saveDraft(d);
+    }
+    if (!d.title) d.title = d.kind === "book" ? (parts.length > 1 ? "ספר חדש" : d.chapters[0].title) : d.chapters[0].title;
+    await saveDraft(d);
+    uploadReview(d);
+  } catch (e) {
+    if (stopped || (e && e.code === "cancelled")) return fail("עצרת.");
+    fail(errText(e));
+  }
+}
+
+// The parent edits each chapter as plain lines: a sentence per line, ❓ a question, ✅ the right answer, ❌ a wrong one.
+function stepsToEdit(steps) {
+  return steps.map(s => s.text ? s.text : `\n❓ ${s.question}\n✅ ${s.options[s.answer]}\n${s.options.filter((_, k) => k !== s.answer).map(o => "❌ " + o).join("\n")}\n`).join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+function editToSteps(text) {
+  const steps = [], errors = [];
+  let q = null;
+  const close = () => {
+    if (!q) return;
+    const right = q.opts.filter(o => o.ok);
+    if (right.length !== 1) errors.push(`בשאלה "${q.question}" צריכה להיות בדיוק תשובה נכונה אחת (✅).`);
+    else if (q.opts.length < 2) errors.push(`בשאלה "${q.question}" צריך לפחות תשובה לא נכונה אחת (❌).`);
+    else steps.push({ question: q.question, options: [right[0].t, ...q.opts.filter(o => !o.ok).map(o => o.t)], answer: 0 });
+    q = null;
+  };
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("❓")) { close(); q = { question: line.slice(1).trim(), opts: [] }; }
+    else if (/^(✅|❌)/.test(line)) {
+      const ok = line.startsWith("✅"), t = line.replace(/^(✅|❌)️?/, "").trim();
+      if (q) q.opts.push({ ok, t }); else errors.push(`התשובה "${t}" לא נמצאת מתחת לשאלה (❓).`);
+    } else { close(); steps.push({ text: line }); }
+  }
+  close();
+  if (!steps.some(s => s.text)) errors.push("אין משפטים לקריאה.");
+  return { steps, errors };
+}
+
+function uploadReview(d) {
+  refresh = null;
+  const edits = d.chapters.map(c => ({ title: c.title, text: stepsToEdit(c.steps) }));
+  const kid = K(d.kid);
+  app.innerHTML = `<div class="screen parent">
+    <div class="topbar"><button class="icon-btn" id="back">→ למסך ההורים</button><h2>בדיקה לפני שליחה</h2></div>
+    <section class="panel">
+      <p class="note">קרא ותקן אם צריך. כל שורה היא משפט שהילד יקרא. ❓ היא שאלה, ✅ התשובה הנכונה ו-❌ תשובה לא נכונה. באפליקציה התשובות מתערבבות.</p>
+      <label for="ttl"><b>${d.kind === "book" ? "שם הספר" : "שם השיעור"}</b></label><input type="text" id="ttl" class="wide" value="${esc(d.title)}">
+      <p class="help">${d.kind === "book" ? `📚 ספר` : "📝 שיעור"} בשביל ${esc(kid.name)}</p>
+    </section>
+    ${edits.map((c, i) => `<section class="panel">
+      ${d.kind === "book" ? `<label for="ct-${i}"><b>פרק ${i + 1}</b></label><input type="text" id="ct-${i}" class="wide" value="${esc(c.title)}">` : ""}
+      <textarea class="edit" id="tx-${i}" aria-label="הטקסט והשאלות">${esc(c.text)}</textarea>
+      <div class="row"><button class="icon-btn" data-try="${i}">👀 לנסות כמו הילד</button></div>
+    </section>`).join("")}
+    <p id="errs" class="danger"></p>
+    <div class="actions row"><button class="icon-btn" id="keep">לשמור טיוטה</button><button class="big-btn" id="send">✓ לשלוח ל${esc(kid.name)}</button></div>
+  </div>`;
+  const collect = () => {
+    d.title = $("#ttl").value.trim() || d.title;
+    const errs = [];
+    d.chapters = edits.map((c, i) => {
+      const { steps, errors } = editToSteps($("#tx-" + i).value);
+      errors.forEach(e => errs.push((edits.length > 1 ? `פרק ${i + 1}: ` : "") + e));
+      return { title: d.kind === "book" ? ($("#ct-" + i).value.trim() || `פרק ${i + 1}`) : d.title, steps };
+    });
+    $("#errs").innerHTML = errs.map(esc).join("<br>");
+    return !errs.length;
+  };
+  $("#back").onclick = async () => { collect(); await saveDraft(d); parent(); };
+  $("#keep").onclick = async () => { collect(); await saveDraft(d); parent(); };
+  app.querySelectorAll("[data-try]").forEach(b => b.onclick = () => {
+    if (!collect()) return;
+    const c = d.chapters[+b.dataset.try];
+    saveDraft(d).then(() => read(d.kid, { id: "preview", title: c.title, steps: c.steps }, () => uploadReview(d), null));
+  });
+  $("#send").onclick = async () => {
+    if (!collect()) return;
+    $("#send").disabled = true; $("#send").textContent = "שולח...";
+    try { await publishItem(d); await remote.db.doc("drafts/" + d.id).delete().catch(() => {}); sent(d); }
+    catch (e) { $("#send").disabled = false; $("#send").textContent = `✓ לשלוח ל${kid.name}`; $("#errs").textContent = e && e.code === "quota_exceeded" ? "האחסון מלא. מחק שיעורים ישנים ונסה שוב." : "השליחה נכשלה. בדוק שיש אינטרנט ונסה שוב."; }
+  };
+}
+
+async function publishItem(d) {
+  const old = remote.items.find(i => i.id === d.id);
+  const version = (old ? old.version || 1 : 0) + 1;
+  // chapters first, then the item, so the tablet never sees a half-written book
+  for (let n = 0; n < d.chapters.length; n++) await remote.db.doc(`items/${d.id}/chapters/c${String(n).padStart(3, "0")}`).set({ n, steps: d.chapters[n].steps });
+  if (old) for (let n = d.chapters.length; n < old.chapters.length; n++) await remote.db.doc(`items/${d.id}/chapters/c${String(n).padStart(3, "0")}`).delete();
+  await remote.db.doc("items/" + d.id).set({
+    kid: d.kid, kind: d.kind, title: d.title, version,
+    createdAt: old ? old.createdAt : Date.now(), updatedAt: Date.now(),
+    chapters: d.chapters.map(c => ({ title: c.title, sentences: c.steps.filter(s => s.text).length, questions: c.steps.filter(s => s.question).length })),
+  });
+}
+
+function sent(d) {
+  app.innerHTML = `<div class="screen parent"><div class="center"><div class="huge">✅</div>
+    <h2>נשלח ל${esc(K(d.kid).name)}!</h2>
+    <p>${d.kind === "book" ? `הספר "${esc(d.title)}" נמצא עכשיו על המדף בטאבלט.` : `השיעור "${esc(d.title)}" מופיע עכשיו ראשון ברשימת השיעורים.`}</p>
+    <button class="big-btn" id="b">למסך ההורים</button></div></div>`;
+  $("#b").onclick = parent;
+}
+
+async function editItem(it) {
+  try {
+    const snap = await remote.db.collection(`items/${it.id}/chapters`).get();
+    const ch = snap.docs.map(x => x.data()).sort((a, b) => a.n - b.n);
+    uploadReview({ id: it.id, kid: it.kid, kind: it.kind, title: it.title, pages: [], chapters: ch.map((c, n) => ({ title: it.chapters[n] ? it.chapters[n].title : `פרק ${n + 1}`, steps: c.steps })) });
+  } catch (e) { dialog("לא הצלחתי לפתוח. בדוק שיש אינטרנט.", "אישור"); }
+}
+
+home();
+startRemote();
+</script>
