@@ -162,9 +162,9 @@ body:has(.scene) .app { max-width: none; padding: 6px; }
 .room .story-btn { background: linear-gradient(#fff8e4, #f6e2b4); border: 3px solid #e9b949; border-radius: 14px; box-shadow: 0 0 0 2px #8a5a00, 0 6px 14px #0006; color: #4a1a0a; }
 .room .story-btn .s { color: #7a4a1a; }
 .room .gate { background: #fff3d6; border-radius: 12px; padding: 12px; }
-.note-card { margin: auto; background: linear-gradient(#fffaf0, #f6e2b4); border: 4px solid #e9b949; box-shadow: 0 0 0 3px #8a5a00, 0 0 30px #f2c14e88, 0 14px 30px #0008; border-radius: 22px; padding: 22px 30px 16px; width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: #4a1a0a; }
+.note-card { box-sizing: border-box; max-width: 100%; margin: auto; background: linear-gradient(#fffaf0, #f6e2b4); border: 4px solid #e9b949; box-shadow: 0 0 0 3px #8a5a00, 0 0 30px #f2c14e88, 0 14px 30px #0008; border-radius: 22px; padding: 22px 30px 16px; width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: #4a1a0a; }
 .note-card h1 { margin: 0; font-size: 32px; font-weight: 400; } .note-card h2 { margin: 0; font-size: 22px; font-weight: 400; }
-.note-card .name-in { border: 3px solid #e9b949 !important; background: #fffdf6 !important; border-radius: 14px !important; }
+.note-card .name-in { box-sizing: border-box; max-width: 100%; border: 3px solid #e9b949 !important; background: #fffdf6 !important; border-radius: 14px !important; }
 .note-card .name-in:focus { outline: none; border-color: #d0283a !important; }
 .note-card .grades button { background: #fffdf6; border: 2px solid #c9962c; border-radius: 999px; min-width: 0; font-size: 19px; padding: 6px 12px; color: #4a1a0a; }
 .note-card .grades button.on { background: linear-gradient(#fff08a, #f2a900); border-color: #8a5a00; }
@@ -578,7 +578,7 @@ async function registerKid() {
 function builtinFor(kidId) {
   const lvl = levelFor(K(kidId));
   const lessons = [], books = {};
-  for (const L of CONTENT) for (const s of L.stories) if (s.theme === "שיעורי בית") lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] });
+  if (((state.kids[kidId] || {}).grade || 1) >= 3) for (const L of CONTENT) for (const s of L.stories) if (s.theme === "שיעורי בית") lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] });
   for (const s of lvl.stories) {
     if (s.theme === "שיעורי בית") { if (0) lessons.push({ id: s.id, kind: "lesson", title: s.title, createdAt: 0, stories: [s] }); continue; }
     const m = /^(.+)-\d+$/.exec(s.id), key = m ? m[1] : "short";
@@ -1058,7 +1058,7 @@ function parent() {
     <section class="panel">
       <h2>➕ להעלות שיעור או ספר</h2>
       ${canUpload ? `<div class="row"><button class="big-btn" id="new-up">📷 העלאה חדשה</button></div>`
-        : `<p class="note">${remote.why === undefined ? "מתחבר לחשבון Claude…" : "העלאה עובדת רק כשהאפליקציה פתוחה מתוך Claude, כשאתה מחובר לחשבון שלך."}<br><small class="muted" dir="ltr">${esc(remote.why || "")}</small></p>`}
+        : `<p class="note">${remote.why === undefined ? "מתחבר לחשבון Claude…" : "העלאה עובדת רק כשהאפליקציה פתוחה מתוך Claude, כשאתה מחובר לחשבון שלך."}<br><small class="muted" dir="ltr">${esc(remote.why === "no-claude" ? "" : remote.why || "")}</small></p>`}
       ${remote.drafts.length ? `<h3 style="margin:6px 0 0">טיוטות שלא נשלחו</h3><div class="items">${remote.drafts.sort((a, b) => b.updatedAt - a.updatedAt).map(d => `
         <div class="item"><span class="t">${esc(d.title || "ללא שם")}</span><span class="muted">${d.kind === "book" ? "📚 ספר" : "📝 שיעור"} · ${esc(K(d.kid).name)} · ${(d.pages || []).length} דפים</span>
         <span class="spacer"></span>${canUpload ? `<button class="icon-btn" data-draft="${d.id}">להמשיך</button>` : ""} <button class="icon-btn danger" data-deldraft="${d.id}">מחיקה</button></div>`).join("")}</div>` : ""}
