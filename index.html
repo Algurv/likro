@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>לקרוא ולהבין</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Noto+Sans+Hebrew:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Suez+One&family=Noto+Sans+Hebrew:wght@500;700&display=swap">
 <style>
 /* Layout: one-screen kids app on a sunny park path. Single bright look on purpose (a game world), so no dark theme.
    Top: candy bar. Middle: the page being read. Bottom: the running track with the banana. */
@@ -118,6 +118,31 @@ h2 { font-size: 26px; }
 /* End of story */
 .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
 .huge { font-size: 64px; }
+/* Reading-room look (chosen design 4): wallpaper, bookshelves, window and desk behind the kid's menus. */
+#roombg { position: fixed; inset: 0; z-index: 0; display: none; }
+#roombg svg { width: 100%; height: 100%; display: block; }
+body:has(.screen.room) #roombg { display: block; }
+.app { position: relative; z-index: 1; }
+.room { font-family: "Suez One", var(--font-ui); color: #3b2416; }
+.room .topbar h1, .room .topbar h2 { background: #fffbe9; color: #3b2416; padding: 2px 18px; border-radius: 8px; box-shadow: 3px 4px 10px #0003; font-weight: 400; }
+.room .icon-btn, .room .candy { background: #fffbe9; border: 2px solid #3b2416; border-radius: 8px; color: #3b2416; }
+.room .story-btn { background: #fffbe9; border: 2px solid #3b2416; border-radius: 8px; box-shadow: 3px 5px 0 #3b241633; }
+.room .link-btn { color: #3b2416; }
+.note-card { margin: auto; position: relative; background: #fffbe9; background-image: repeating-linear-gradient(#fffbe9 0 33px, #bcd3f2 33px 35px); border-radius: 4px; transform: rotate(-1.2deg); box-shadow: 4px 8px 18px #0005; padding: 26px 30px 18px; width: min(560px, 100%); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.note-card::before { content: ""; position: absolute; top: -14px; left: 50%; width: 120px; height: 30px; margin-left: -60px; background: #f6d36f99; transform: rotate(3deg); }
+.note-card h1 { margin: 0; font-size: 32px; font-weight: 400; } .note-card h2 { margin: 0; font-size: 22px; font-weight: 400; }
+.note-card .name-in { border: 0 !important; border-bottom: 3px solid #3b2416 !important; background: transparent !important; border-radius: 0 !important; }
+.note-card .grades button { background: #fff; border: 2px solid #3b2416; border-radius: 6px; min-width: 0; font-size: 19px; padding: 6px 10px; color: #3b2416; }
+.note-card .name-in:focus { outline: none; border-bottom-color: #e63946 !important; }
+.note-card .grades button.on { background: #e63946; color: #fff; border-color: #e63946; }
+.room .big-btn { background: #e63946; color: #fff; border-radius: 10px; box-shadow: 0 5px 0 #9d1f2a; font-family: inherit; }
+.room .hub { display: flex; justify-content: center; align-items: center; gap: clamp(20px, 7vw, 80px); flex-wrap: wrap; flex: 1; }
+.room .hub-btn { background: none; border: 0; padding: 0; gap: 4px; font-family: inherit; color: #3b2416; }
+.room .hub-btn svg { width: clamp(170px, 24vw, 250px); height: auto; aspect-ratio: 250 / 280; filter: drop-shadow(0 10px 10px #0004); transition: transform .2s; }
+.room .hub-btn:hover svg, .room .hub-btn:active svg { transform: translateY(-6px) rotate(-2deg); }
+.room .hub-btn .t { font-size: 32px; text-shadow: 0 2px 0 #fffbe9; }
+.room .hub-btn .s { color: #3b2416; background: #fffbe9cc; padding: 0 12px; border-radius: 8px; font-family: var(--font-ui); }
+
 
 /* Parent */
 .parent { overflow-y: auto; display: flex; flex-direction: column; gap: 18px; padding-bottom: 20px; }
@@ -151,7 +176,8 @@ input[type=text], input[type=number] { font-family: inherit; font-size: 20px; pa
 .seg button { background: var(--paper); border: 3px solid var(--line); border-radius: 14px; padding: 8px 16px; font-size: 20px; color: var(--ink); }
 .seg button.on { border-color: var(--btn); background: #e8f0ff; }
 .file-btn { position: relative; overflow: hidden; display: inline-block; }
-.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.file-btn input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 200px; }
+.pastebox { margin-top: 10px; padding: 14px; border: 2px dashed var(--line); border-radius: 12px; color: var(--soft); text-align: center; min-height: 48px; outline: none; }
 .thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
 .thumb { width: 84px; position: relative; font-size: 13px; color: var(--soft); text-align: center; }
 .thumb img { width: 84px; height: 110px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
@@ -207,6 +233,35 @@ const plain = s => String(s || "").replace(/[\u0591-\u05C7]/g, "").replace(/\s+/
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const app = $("#app");
+// Reading-room background (design 4): drawn once, fixed behind the kid's menus.
+function roomSvg() {
+  const H = Math.round(Math.max(560, Math.min(2600, 1000 * innerHeight / Math.max(1, innerWidth))));  // match the screen shape so nothing is blown up
+  let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let s = `<svg viewBox="0 0 1000 ${H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="wp" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="#f3e3c3"/><rect width="20" height="40" fill="#efd9b1"/><circle cx="10" cy="20" r="2.5" fill="#e7c48f"/></pattern><linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc6ff"/><stop offset="1" stop-color="#dff3ff"/></linearGradient></defs><rect width="1000" height="${H}" fill="url(#wp)"/>`;
+  s += `<g transform="translate(400 40)"><rect width="200" height="170" rx="6" fill="#8b5a2b"/><rect x="12" y="12" width="176" height="146" fill="url(#win)"/><circle cx="150" cy="50" r="20" fill="#ffd166"/><path d="M12 130 Q60 100 110 125 T188 120 V158 H12Z" fill="#7bc96f"/><rect x="96" y="12" width="8" height="146" fill="#8b5a2b"/><rect x="12" y="81" width="176" height="8" fill="#8b5a2b"/><path d="M-20 -6 Q30 90 -10 200 H-30 V-6Z M220 -6 Q170 90 210 200 H230 V-6Z" fill="#e63946" opacity=".9"/></g>`;
+  const shelf = (x0, w) => {
+    let o = `<rect x="${x0 - 14}" y="20" width="${w + 28}" height="${H - 20}" fill="#5c3517"/>`;
+    for (let r = 0; r < Math.floor((H - 110) / 130); r++) {
+      const y = 40 + r * 130; o += `<rect x="${x0}" y="${y + 110}" width="${w}" height="16" fill="#7a4a22"/>`;
+      let x = x0 + 6;
+      while (x < x0 + w - 30) {
+        const bw = 18 + rnd() * 18, bh = 70 + rnd() * 35, c = ["#e63946", "#2a9d8f", "#f4a261", "#457b9d", "#8338ec", "#ffbe0b", "#2e9e5b", "#fb5607"][Math.floor(rnd() * 8)];
+        o += `<rect x="${x}" y="${y + 110 - bh}" width="${bw}" height="${bh}" rx="3" fill="${c}"/><rect x="${x + 3}" y="${y + 120 - bh}" width="${bw - 6}" height="4" fill="#fff8"/><rect x="${x + 3}" y="${y + 98}" width="${bw - 6}" height="4" fill="#fff8"/>`;
+        x += bw + 2;
+      }
+    }
+    return o;
+  };
+  s += shelf(14, 220) + shelf(766, 220);
+  s += `<g transform="translate(0 ${H - 640})"><rect x="0" y="560" width="1000" height="80" fill="#a0632e"/><rect x="0" y="552" width="1000" height="14" fill="#c27c3e"/><path d="M0 590 H1000 M0 615 H1000" stroke="#8b5424" stroke-width="2"/></g>`;
+  s += `<g transform="translate(500 ${H - 88})"><rect x="-6" y="-120" width="12" height="120" fill="#333"/><path d="M-50 -110 L50 -110 30 -170 -30 -170Z" fill="#2a9d8f"/><ellipse cx="0" cy="-108" rx="40" ry="10" fill="#fff6a8" opacity=".9"/><rect x="-30" y="-6" width="60" height="10" rx="5" fill="#333"/></g>`;
+  return s + "</svg>";
+}
+const BOOK_SVG = `<svg viewBox="0 0 250 280" aria-hidden="true"><g transform="rotate(-4 125 140)"><rect x="40" y="32" width="178" height="226" rx="6" fill="#f4ecd8"/>${[...Array(18)].map((_, i) => `<path d="M42 ${40 + i * 12} h174" stroke="#e5dcc3" stroke-width="1"/>`).join("")}<rect x="26" y="24" width="182" height="228" rx="8" fill="#7b2d26"/><rect x="34" y="32" width="166" height="212" rx="6" fill="none" stroke="#e9c46a" stroke-width="3"/><path d="M26 24 h30 L26 54Z M208 24 h-30 L208 54Z M26 252 h30 L26 222Z M208 252 h-30 L208 222Z" fill="#e9c46a"/><rect x="60" y="88" width="114" height="60" rx="4" fill="#e9c46a"/><text x="117" y="129" text-anchor="middle" font-family="Suez One" font-size="30" fill="#7b2d26">ספרים</text><path d="M80 180 q37 -24 74 0 q-37 24 -74 0Z" fill="none" stroke="#e9c46a" stroke-width="3"/><rect x="150" y="240" width="16" height="36" fill="#2a9d8f"/><path d="M150 276 l8 -8 8 8z" fill="#7b2d26"/></g></svg>`;
+const NOTE_SVG = `<svg viewBox="0 0 250 280" aria-hidden="true"><g transform="rotate(4 125 140)"><rect x="36" y="26" width="180" height="234" rx="4" fill="#d9b382"/><rect x="200" y="26" width="16" height="234" fill="#3b2416"/><rect x="58" y="62" width="128" height="88" rx="4" fill="#fffbe9" stroke="#3b2416" stroke-width="2"/><text x="122" y="94" text-anchor="middle" font-family="Suez One" font-size="22" fill="#3b2416">מחברת</text><path d="M70 110 h104 M70 132 h104" stroke="#3b2416" stroke-width="1.5"/><text x="122" y="128" text-anchor="middle" font-family="Suez One" font-size="17" fill="#457b9d">שיעורי בית</text><path d="M60 180 h120 M60 196 h120 M60 212 h90" stroke="#b9925f" stroke-width="2"/><g transform="translate(150 210) rotate(-35)"><rect width="110" height="14" fill="#ffbe0b"/><rect x="96" width="14" height="14" fill="#e63946"/><path d="M0 0 l-18 7 18 7z" fill="#f4d3a1"/><path d="M-12 5 l-6 2 6 2z" fill="#333"/></g></g></svg>`;
+{ const bg = document.createElement("div"); bg.id = "roombg"; bg.innerHTML = roomSvg(); document.body.insertBefore(bg, document.body.firstChild);
+  let lastShape = innerWidth > innerHeight; addEventListener("resize", () => { const sh = innerWidth > innerHeight; if (sh !== lastShape) { lastShape = sh; bg.innerHTML = roomSvg(); } }); }
+
 
 // ---------- sound ----------
 let audio;
@@ -510,7 +565,7 @@ function builtinFor(kidId) {
 }
 
 // Data shared between the parent's phone and the kid's tablet (claude.ai artifact storage).
-const remote = { db: null, sample: null, items: [], drafts: [], runs: [], kids: [], loaded: false, slow: false };
+const remote = { why: undefined, db: null, sample: null, items: [], drafts: [], runs: [], kids: [], loaded: false, slow: false };
 const chapterCache = {};
 let refresh = null;  // re-renders the current list screen when shared data changes
 function remoteItems(kidId, kind) {
@@ -548,19 +603,41 @@ function runsOf(kidId, storyId) {
 const isDone = (kidId, storyId) => runsOf(kidId, storyId).length > 0;
 
 async function startRemote() {
-  if (!window.claude || !claude.use) return;
-  const [db, sample] = await Promise.all([claude.use("db"), claude.use("sample")]);
+  // The host may add window.claude a little after the page starts, so wait for it (up to 15 s).
+  for (let i = 0; i < 60 && !(window.claude && window.claude.use); i++) await new Promise(r => setTimeout(r, 250));
+  remote.why = !(window.claude && window.claude.use) ? "no-claude" : "";
+  if (remote.why) { refresh && refresh(); return; }
+  let db = null, sample = null;
+  try { [db, sample] = await Promise.all([claude.use("db"), claude.use("sample")]); } catch (e) { remote.why = "use-error: " + (e && e.message || e); }
   remote.sample = sample;
+  if (!remote.why) remote.why = (db ? "" : "no-db ") + (sample ? "" : "no-sample");
+  refresh && refresh();
   if (!db) return;
   remote.db = db;
   const timer = setTimeout(() => { remote.slow = true; refresh && refresh(); }, 10000);
   const watch = (name, key) => db.collection(name).onSnapshot(snap => {
     remote[key] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (!snap.metadata.fromCache) { remote.loaded = true; remote.slow = false; clearTimeout(timer); }
+    if (!snap.metadata.fromCache) { remote.loaded = true; remote.slow = false; clearTimeout(timer); if (key === "runs") backfillRuns(); }
     refresh && refresh();
   }, () => { clearTimeout(timer); remote.slow = true; refresh && refresh(); });
   watch("items", "items"); watch("drafts", "drafts"); watch("runs", "runs"); watch("kids", "kids");
   registerKid();
+}
+
+// Readings done before runs were shared live only on this device: copy them up once, so the parent sees them too.
+let backfilled = false;
+async function backfillRuns() {
+  if (backfilled || !remote.db || !state.me || !state.kids[state.me]) return;
+  backfilled = true;
+  const kidId = state.me, have = new Set(remote.runs.filter(r => r.kid === kidId).map(r => r.storyId + "@" + r.date));
+  const titles = {}; try { allStories(kidId).forEach(x => titles[x.id] = x.title); } catch (e) {}
+  for (const [storyId, runs] of Object.entries(state.kids[kidId].runs)) {
+    if (storyId === "preview") continue;
+    for (const run of runs) {
+      if (have.has(storyId + "@" + run.date)) continue;
+      try { await remote.db.collection("runs").add({ kid: kidId, storyId, title: titles[storyId] || storyId, ...run, reads: (run.reads || []).map(r => ({ ms: r.ms, words: r.words })) }); } catch (e) { return; }
+    }
+  }
 }
 
 // ---------- screens ----------
@@ -585,15 +662,15 @@ function home() {
 function welcome() {
   refresh = null;
   let grade = 0;
-  app.innerHTML = `<div class="screen"><div class="center">
-    <svg viewBox="-40 -105 80 110" style="width:120px;height:120px">${kidSvg("#2f6fe4")}</svg>
+  app.innerHTML = `<div class="screen room"><div class="center"><div class="note-card">
+    <svg viewBox="-40 -105 80 110" style="width:96px;height:96px">${kidSvg("#e63946")}</svg>
     <h1>שָׁלוֹם! מָה הַשֵּׁם שֶׁלְּךָ?</h1>
     <input type="text" id="nm" class="name-in" autocomplete="off" aria-label="השם שלך">
     <h2>בְּאֵיזוֹ כִּתָּה אַתָּה?</h2>
     <div class="seg grades">${GRADES.map((g, i) => `<button data-g="${i + 1}">כִּתָּה ${g}׳</button>`).join("")}</div>
     <button class="big-btn" id="start" disabled>יַאללָה, מַתְחִילִים! ▸</button>
     <button class="link-btn" id="parent">כניסה להורים</button>
-  </div></div>`;
+  </div></div></div>`;
   $("#parent").onclick = parentGate;
   const check = () => $("#start").disabled = !($("#nm").value.trim() && grade);
   $("#nm").oninput = check;
@@ -626,12 +703,12 @@ function hub(kidId) {
   refresh = () => hub(kidId);
   const lib = library(kidId);
   const newLessons = lib.lessons.filter(l => !storiesOf(l).every(s => isDone(kidId, s.id))).length;
-  app.innerHTML = `<div class="screen">
+  app.innerHTML = `<div class="screen room">
     <div class="topbar"><h1>שָׁלוֹם ${esc(kid.name)}!</h1><span class="spacer"></span>${candyBar(kid)}</div>
     <div class="hub">
-      <button class="hub-btn" id="go-lessons"><span class="e">📝</span>שיעורים
+      <button class="hub-btn" id="go-lessons">${NOTE_SVG}<span class="t">שיעורים</span>
         <span class="s">${newLessons ? `<span class="badge">${newLessons} חדש</span>` : lib.lessons.length ? "קראת הכל 👍" : "עוד אין שיעורים"}</span></button>
-      <button class="hub-btn" id="go-books"><span class="e">📚</span>ספרים
+      <button class="hub-btn" id="go-books">${BOOK_SVG}<span class="t">ספרים</span>
         <span class="s">${lib.books.length} ספרים על המדף</span></button>
     </div>
     ${remote.slow && !remote.loaded ? `<p class="help">שיעורים חדשים לא נטענו עדיין. בדקו שיש אינטרנט.</p>` : ""}
@@ -656,7 +733,7 @@ function lessonList(kidId) {
   const kid = state.kids[kidId];
   refresh = () => lessonList(kidId);
   const lessons = library(kidId).lessons;
-  app.innerHTML = `<div class="screen">
+  app.innerHTML = `<div class="screen room">
     <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📝 השיעורים של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
     ${lessons.length ? "" : `<div class="gate">עוד אין שיעורים. כשאבא או אמא יעלו שיעור, הוא יופיע כאן.</div>`}
     <div class="stories">${lessons.map((l, i) => storyButton(kidId, storiesOf(l)[0], i, true,
@@ -673,7 +750,7 @@ function bookShelf(kidId) {
   const kid = state.kids[kidId];
   refresh = () => bookShelf(kidId);
   const books = library(kidId).books;
-  app.innerHTML = `<div class="screen">
+  app.innerHTML = `<div class="screen room">
     <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📚 המדף של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
     <div class="stories">${books.map((bk, i) => {
       const st = storiesOf(bk), read = st.filter(s => isDone(kidId, s.id)).length;
@@ -695,7 +772,7 @@ function bookChapters(kidId, bookId) {
   const isOpen = i => i === 0 || st[i].start || isDone(kidId, st[i - 1].id);
   const nextIdx = st.findIndex((s, i) => !isDone(kidId, s.id) && isOpen(i));
   const short = t => t.includes(": ") ? t.split(": ").slice(1).join(": ") : t;
-  app.innerHTML = `<div class="screen">
+  app.innerHTML = `<div class="screen room">
     <div class="topbar"><button class="icon-btn" id="back">→ למדף</button><h2>📖 ${esc(bk.title)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
     ${nextIdx >= 0 ? `<div class="actions"><button class="big-btn" id="cont">${nextIdx ? "להמשיך לקרוא ▸" : "להתחיל לקרוא ▸"}</button></div>` : ""}
     <div class="stories">${st.map((s, i) => storyButton(kidId, { ...s, title: `פרק ${i + 1}: ${short(s.title)}` }, i, isOpen(i), "פרק חדש")).join("")}</div>
@@ -886,7 +963,7 @@ function parent() {
     <section class="panel">
       <h2>➕ להעלות שיעור או ספר</h2>
       ${canUpload ? `<div class="row"><button class="big-btn" id="new-up">📷 העלאה חדשה</button></div>`
-        : `<p class="note">העלאה עובדת רק כשהאפליקציה פתוחה מתוך Claude, כשאתה מחובר לחשבון שלך.</p>`}
+        : `<p class="note">${remote.why === undefined ? "מתחבר לחשבון Claude…" : "העלאה עובדת רק כשהאפליקציה פתוחה מתוך Claude, כשאתה מחובר לחשבון שלך."}<br><small class="muted" dir="ltr">${esc(remote.why || "")}</small></p>`}
       ${remote.drafts.length ? `<h3 style="margin:6px 0 0">טיוטות שלא נשלחו</h3><div class="items">${remote.drafts.sort((a, b) => b.updatedAt - a.updatedAt).map(d => `
         <div class="item"><span class="t">${esc(d.title || "ללא שם")}</span><span class="muted">${d.kind === "book" ? "📚 ספר" : "📝 שיעור"} · ${esc(K(d.kid).name)} · ${(d.pages || []).length} דפים</span>
         <span class="spacer"></span>${canUpload ? `<button class="icon-btn" data-draft="${d.id}">להמשיך</button>` : ""} <button class="icon-btn danger" data-deldraft="${d.id}">מחיקה</button></div>`).join("")}</div>` : ""}
@@ -951,9 +1028,10 @@ function uploadStart(d) {
         <b>הדפים</b>
         <p class="help">דף אחד בכל תמונה, ישר ובאור טוב. אפשר לצלם כמה פעמים ולהוסיף עוד. סדר התמונות = סדר הדפים.</p>
         <div class="row">
-          <span class="file-btn big-btn">📷 לצלם דף<input type="file" accept="image/*" capture="environment" id="cam"></span>
-          <span class="file-btn icon-btn">🖼️ לבחור תמונות או PDF<input type="file" accept="image/*,application/pdf" multiple id="pick"></span>
+          <label class="file-btn big-btn">📷 לצלם דף<input type="file" accept="image/*" capture="environment" id="cam"></label>
+          <label class="file-btn icon-btn">🖼️ לבחור תמונות או PDF<input type="file" accept="image/*,application/pdf" multiple id="pick"></label>
         </div>
+        <div id="paste" class="pastebox" contenteditable="true" inputmode="none">📋 אם הכפתורים לא נפתחים: להעתיק תמונה מהגלריה, ללחוץ כאן לחיצה ארוכה ולבחור "הדבק"</div>
         ${d.pages.length ? `<p class="help">✓ ${d.pages.length} דפים כבר הועתקו בטיוטה הזאת. התמונות החדשות יתווספו אחריהם.</p>` : ""}
         <div class="thumbs">${pending.map((p, i) => `<div class="thumb"><img src="${p.url}" alt="דף ${d.pages.length + i + 1}"><button data-rm="${i}" aria-label="להסיר">✕</button>דף ${d.pages.length + i + 1}</div>`).join("")}</div>
         <p id="pdfmsg" class="help" hidden>פותח את ה-PDF...</p>
@@ -977,6 +1055,14 @@ function uploadStart(d) {
     };
     $("#cam").onchange = e => add([...e.target.files]);
     $("#pick").onchange = e => add([...e.target.files]);
+    $("#paste").addEventListener("paste", e => {
+      e.preventDefault();
+      const files = [...(e.clipboardData ? e.clipboardData.items : [])].filter(it => it.kind === "file" && /^image\/|pdf$/.test(it.type)).map(it => it.getAsFile()).filter(Boolean);
+      if (files.length) add(files); else dialog("לא נמצאה תמונה בהעתקה. צריך להעתיק את התמונה עצמה, לא קישור.", "אישור");
+    });
+    $("#paste").addEventListener("drop", e => { e.preventDefault(); add([...e.dataTransfer.files]); });
+    $("#paste").addEventListener("dragover", e => e.preventDefault());
+    $("#paste").addEventListener("input", () => { $("#paste").textContent = "📋 להדביק כאן תמונה"; });
     $("#go").onclick = () => { d.title = $("#ttl").value.trim(); uploadWork(d); };
   };
   render();
