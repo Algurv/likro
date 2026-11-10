@@ -136,7 +136,7 @@ body:has(.screen.prof) #roombg { display: none !important; } body:has(.screen.pr
 #roombg img { filter: brightness(.8); }
 body:has(.screen.room) #roombg { display: block; }
 #chbg { position: fixed; inset: 0; z-index: 0; display: none; background: #3a0810; }
-#chbg img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.45); }
+#chbg img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.7); }
 body:has(.screen.chroom) #roombg { display: none; } body:has(.screen.chroom) #chbg { display: block; }
 body:has(.screen.stage) #stagebg { display: block; }
 body:has(.screen.room), body:has(.screen.stage) { background: #3a0810; }
@@ -446,7 +446,7 @@ const HUB_IMG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/6xaJSlACEQAA
   new MutationObserver(fit).observe(app, { childList: true });
   addEventListener("resize", fit); fit();
   const tn = document.createElement("div"); tn.id = "turn"; tn.innerHTML = `<div class="ph">📱</div><div>סוֹבְבוּ אֶת הַטֶּלֶפוֹן לָרֹחַב</div><small>האפליקציה בנויה למסך רחב, כמו בטאבלט</small>`; document.body.appendChild(tn);
-  const ch = document.createElement("div"); ch.id = "chbg"; ch.innerHTML = `<img src="${SHELF_IMG}" alt="">`; document.body.insertBefore(ch, document.body.firstChild);
+  const ch = document.createElement("div"); ch.id = "chbg"; ch.innerHTML = `<img src="${THEATER_IMG}" alt="">`; document.body.insertBefore(ch, document.body.firstChild);
   const cr = document.createElement("div"); cr.id = "chapbg"; cr.innerHTML = `<img src="${PROFILE_IMG}" alt="">`; document.body.insertBefore(cr, document.body.firstChild);
   const st = document.createElement("div"); st.id = "stagebg"; st.innerHTML = `<img src="${STAGE_IMG}" alt="">`; document.body.insertBefore(st, document.body.firstChild); }
 
