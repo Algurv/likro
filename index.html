@@ -368,6 +368,33 @@ input.wide { width: 100%; box-sizing: border-box; }
 .note { background: #fff6d6; border: 2px solid var(--sun); border-radius: 14px; padding: 8px 12px; font-size: 16px; }
 .modal { position: fixed; inset: 0; background: rgba(20,30,50,.45); display: grid; place-items: center; z-index: 50; padding: 16px; }
 .modal .box { background: var(--paper); border-radius: 18px; padding: 18px; max-width: 420px; font-size: 20px; display: flex; flex-direction: column; gap: 12px; }
+/* ---------- rewards: candy count, prize jar, reader rank ---------- */
+.ccount { position: absolute; right: 100%; top: 50%; margin-right: 2px; transform: translateY(-50%); z-index: 2; background: linear-gradient(#5a0f1a, #3a0810); color: #fff3c4; border: 2px solid #f2c14e; border-radius: 999px; padding: 1px 10px; font-family: var(--font-ui); font-size: clamp(14px, 1.9vw, 22px); line-height: 1.3; white-space: nowrap; box-shadow: 0 2px 6px #0009; direction: rtl; }
+.ccount.bump { animation: cbump .6s ease-out; }
+@keyframes cbump { 0% { transform: translateY(-50%) scale(1); } 40% { transform: translateY(-50%) scale(1.45); background: #ff5c8a; } 100% { transform: translateY(-50%) scale(1); } }
+.jar-spot { position: absolute; left: 43.6%; top: 52%; width: 12.8%; height: 21%; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; z-index: 2; }
+.jar-spot:active { transform: scale(.96); }
+.jar { position: absolute; inset: 14% 4% 0 4%; border: 3px solid #fffc; border-top-width: 2px; border-radius: 22% 22% 30% 30% / 12% 12% 18% 18%; background: linear-gradient(90deg, #ffffff40 0%, #ffffff18 30%, #ffffff10 60%, #ffffff40 100%), #3a081055; box-shadow: inset 0 -6px 12px #fff3, 0 4px 10px #0008; display: flex; flex-wrap: wrap-reverse; align-content: flex-start; justify-content: center; padding: 6% 4%; overflow: hidden; }
+.jar i { font-style: normal; font-size: clamp(13px, 2.3vw, 30px); line-height: 1; margin: -1px; }
+.jar-lid { position: absolute; top: 4%; left: 14%; right: 14%; height: 12%; background: linear-gradient(#c07a2c, #7a4612); border: 2px solid #3a1a05; border-radius: 6px; }
+.jar-n { position: absolute; left: 50%; bottom: -12%; transform: translateX(-50%); background: #e0242c; color: #fff; border: 2px solid #ffe9a8; border-radius: 999px; padding: 0 8px; font-size: clamp(12px, 1.6vw, 18px); white-space: nowrap; box-shadow: 0 2px 6px #0008; }
+.jar-empty { color: #fff9; font-size: clamp(10px, 1.3vw, 15px); align-self: center; text-align: center; width: 100%; }
+.hub-rank { position: absolute; right: 2%; top: 37%; background: linear-gradient(#fff3c4, #f2c14e 55%, #c9901c); color: #5a1420; border: 2px solid #8a5a00; border-radius: 12px; padding: 2px 10px; font-size: clamp(12px, 1.9vw, 20px); box-shadow: 0 3px 8px #0009; pointer-events: none; white-space: nowrap; }
+.prize-ov { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: radial-gradient(#3a0810cc, #000d); padding: 16px; animation: pfade .3s ease-out; }
+@keyframes pfade { from { opacity: 0; } }
+.prize-box { background: linear-gradient(#5a0f1a, #3a0810); border: 4px solid #f2c14e; box-shadow: 0 0 0 3px #8a5a00, 0 10px 40px #000; border-radius: 26px; color: #fff3c4; text-align: center; padding: 18px 26px; max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; font-family: var(--font-read); }
+.prize-big { font-size: clamp(56px, 12vw, 110px); line-height: 1.1; white-space: nowrap; letter-spacing: -.25em; animation: pbig 1s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes pbig { 0% { transform: scale(0) rotate(-30deg); } 100% { transform: scale(1) rotate(0); } }
+.prize-t { font-size: clamp(24px, 4.5vw, 38px); }
+.prize-s { font-size: clamp(16px, 2.6vw, 22px); color: #ffe9a8; }
+.rank-up { background: linear-gradient(#fff3c4, #f2c14e 55%, #c9901c); color: #5a1420; border-radius: 14px; padding: 6px 16px; font-size: clamp(20px, 3.6vw, 30px); animation: pbig 1s .5s cubic-bezier(.2,1.6,.4,1) both; }
+.prize-box button { font-family: var(--font-read); font-size: 26px; background: #2e9e5b; color: #fff; border: 3px solid #fff3c4; border-radius: 16px; padding: 6px 34px; cursor: pointer; }
+.trophy-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 30px; max-height: 30vh; overflow: auto; }
+.ranks { display: flex; flex-direction: column; gap: 4px; width: 100%; font-size: clamp(16px, 2.4vw, 20px); }
+.ranks div { display: flex; justify-content: space-between; gap: 10px; padding: 3px 10px; border-radius: 10px; opacity: .55; }
+.ranks div.got { opacity: 1; }
+.ranks div.now { background: #f2c14e; color: #5a1420; opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .prize-big, .rank-up, .ccount.bump, .prize-ov { animation: none; } }
 </style>
 
 <div class="app" id="app" dir="rtl" lang="he"></div>
@@ -439,6 +466,64 @@ function beep(kind) {
   } catch (e) {}
 }
 
+// ---------- rewards ----------
+// Every 10 right answers fill the bar and win a prize: a handful of candies, then a lollipop, and so on.
+// Every 5 prizes the kid goes up a reader rank. All of it comes from kid.candies, which only goes up.
+const PER_PRIZE = 10, PRIZES_PER_RANK = 5;
+const PRIZE = [{ icon: "🍬", big: "🍬🍬🍬", name: "חֹפֶן סֻכָּרִיּוֹת" }, { icon: "🍭", big: "🍭", name: "סֻכָּרִיָּה עַל מַקֵּל" }];
+const RANKS = [["🌱", "קוֹרֵא מַתְחִיל"], ["🔎", "קוֹרֵא סַקְרָן"], ["🦁", "קוֹרֵא אַמִּיץ"], ["🦉", "קוֹרֵא חָכָם"], ["🏆", "אַלּוּף הַקְּרִיאָה"], ["👑", "אַגָּדַת הַקְּרִיאָה"]];
+const prizesOf = kid => Math.floor((kid.candies || 0) / PER_PRIZE);
+const prizeAt = i => PRIZE[i % PRIZE.length];          // i = which prize, from 0
+const rankIdx = kid => Math.min(RANKS.length - 1, Math.floor(prizesOf(kid) / PRIZES_PER_RANK));
+const toPrize = kid => PER_PRIZE - (kid.candies || 0) % PER_PRIZE;
+let pendingPrize = null;   // set when a right answer fills the bar; shown after the kid's jump
+function prizeShow(done) {
+  const pp = pendingPrize; pendingPrize = null;
+  if (!pp) return done && done();
+  const { kid, n, rankUp } = pp, pr = prizeAt(n - 1), nx = prizeAt(n), rk = RANKS[rankIdx(kid)];
+  const ov = document.createElement("div");
+  ov.className = "prize-ov";
+  ov.innerHTML = `<div class="prize-box" role="dialog" aria-live="assertive">
+    <div class="prize-big">${pr.big}</div>
+    <div class="prize-t">קִבַּלְתָּ ${pr.name}!</div>
+    <div class="prize-s">פְּרָס מִסְפָּר ${n} · נִכְנָס לַצִּנְצֶנֶת</div>
+    ${rankUp ? `<div class="rank-up">עָלִיתָ דַּרְגָּה! ${rk[0]} ${rk[1]}</div>` : ""}
+    <div class="prize-s">הַפְּרָס הַבָּא: ${nx.icon} ${nx.name}</div>
+    <button>יֵשׁ! 👍</button></div>`;
+  document.body.appendChild(ov);
+  screenConfetti(); beep("good");
+  if (rankUp) setTimeout(screenConfetti, 900);
+  ov.querySelector("button").onclick = () => {
+    ov.remove();
+    const cb = $("#candy");
+    if (cb && cb.classList.contains("vbar")) barMove(cb, barT(0)); else if (cb) cb.outerHTML = candyBar(kid, cb.classList.contains("painted"));
+    if (done) done();
+  };
+}
+// The prize jar on the home screen: tap it to see every prize and the reader ranks.
+function jarHtml(kid) {
+  const n = prizesOf(kid), show = Math.min(n, 18);
+  const items = Array.from({ length: show }, (_, k) => `<i>${prizeAt(n - show + k).icon}</i>`).join("");
+  return `<button class="jar-spot" id="jar" aria-label="צנצנת הפרסים: ${n} פרסים"><span class="jar-lid"></span>
+    <span class="jar">${items || `<span class="jar-empty">עוֹד ${toPrize(kid)} 🍬</span>`}</span>
+    <span class="jar-n">🏆 ${n}</span></button>`;
+}
+function trophies(kid) {
+  const n = prizesOf(kid), r = rankIdx(kid);
+  const toRank = r < RANKS.length - 1 ? (r + 1) * PRIZES_PER_RANK - n : 0;
+  const ov = document.createElement("div");
+  ov.className = "prize-ov";
+  ov.innerHTML = `<div class="prize-box" role="dialog">
+    <div class="prize-t">הַפְּרָסִים שֶׁל ${esc(kid.name)}</div>
+    <div class="prize-s">🍬 ${kid.candies || 0} סֻכָּרִיּוֹת · 🏆 ${n} פְּרָסִים · עוֹד ${toPrize(kid)} 🍬 לַפְּרָס הַבָּא</div>
+    <div class="trophy-list">${Array.from({ length: n }, (_, k) => prizeAt(k).icon).join(" ") || "עוֹד אֵין. כָּל 10 תְּשׁוּבוֹת נְכוֹנוֹת = פְּרָס!"}</div>
+    <div class="ranks">${RANKS.map((x, i) => `<div class="${i < r ? "got" : i === r ? "now" : ""}"><span>${x[0]} ${x[1]}</span><span>${i === r ? "אַתָּה כָּאן" : i < r ? "✓" : i * PRIZES_PER_RANK + " 🏆"}</span></div>`).join("")}</div>
+    ${toRank ? `<div class="prize-s">עוֹד ${toRank} פְּרָסִים לַדַּרְגָּה הַבָּאָה</div>` : ""}
+    <button>סְגוֹר</button></div>`;
+  document.body.appendChild(ov);
+  ov.onclick = e => { if (e.target === ov || e.target.tagName === "BUTTON") ov.remove(); };
+}
+
 // ---------- candy ----------
 // Dad's painted candy bar: the part not yet earned is greyed out, and it lights up as candies come in.
 // Dad's bar video: how full the bar is (0..1) -> the moment in the video that shows it.
@@ -470,42 +555,53 @@ function barMove(el, t) {
   v._raf = requestAnimationFrame(tick);
 }
 function candyBar(kid, painted) {
-  if (VBAR) {
-    const lc = kid.levelCandies[kid.level] || 0, goal = GATE[kid.level] || 20, p = Math.min(1, lc / goal), left = Math.max(0, goal - lc);
-    return `<div class="vbar ${painted ? "painted" : ""}" id="candy" data-t="${barT(p)}" aria-label="${lc} סוכריות, ${left ? `עוד ${left} לשלב הבא` : "אפשר לעבור שלב"}"><video muted playsinline preload="auto" disablepictureinpicture src="${barUrl()}"></video></div>`;
-  }
-  const lc = kid.levelCandies[kid.level] || 0, goal = GATE[kid.level] || 20, p = Math.min(1, lc / goal);
-  const left = Math.max(0, goal - lc);
-  return `<div class="pbar ${painted ? "painted" : ""}" id="candy" aria-label="${lc} סוכריות, ${left ? `עוד ${left} לשלב הבא` : "אפשר לעבור שלב"}" title="${left ? `עוד ${left} סוכריות לשלב הבא` : "אפשר לעבור שלב!"}">
+  const c = kid.candies || 0, left = toPrize(kid), p = (c % PER_PRIZE) / PER_PRIZE;
+  const label = `${c} סוכריות, עוד ${left} לפרס הבא`;
+  const count = `<span class="ccount">🍬 ${c}</span>`;
+  if (VBAR) return `<div class="vbar ${painted ? "painted" : ""}" id="candy" data-t="${barT(p)}" aria-label="${label}"><video muted playsinline preload="auto" disablepictureinpicture src="${barUrl()}"></video>${count}</div>`;
+  return `<div class="pbar ${painted ? "painted" : ""}" id="candy" aria-label="${label}" title="עוד ${left} סוכריות לפרס הבא">
     <img src="${BAR_IMG}" alt="">
     ${p < 1 ? `<img class="pgrey" src="${BAR_IMG}" alt="" style="clip-path: inset(29% 9.6% 28% ${(15.2 + 74.5 * p).toFixed(1)}% round 0 999px 999px 0)">` : ""}
     ${p > 0 ? `<b class="pspark" style="left:${(15.2 + 74.5 * p).toFixed(1)}%"></b>` : ""}
+    ${count}
   </div>`;
 }
 function addCandy(kid, n, fromEl) {
-  const lc = kid.levelCandies[kid.level] || 0;
-  const next = Math.max(0, lc + n);
-  kid.levelCandies[kid.level] = next;
-  kid.candies = Math.max(0, kid.candies + (next - lc));
+  if (n <= 0) return;   // a wrong answer never takes candies away
+  const before = prizesOf(kid), rankBefore = rankIdx(kid);
+  kid.candies = (kid.candies || 0) + n;
+  kid.levelCandies[kid.level] = (kid.levelCandies[kid.level] || 0) + n;
   save();
-  if (fromEl && next !== lc) {
-    const r = fromEl.getBoundingClientRect(), c = $("#candy").getBoundingClientRect();
+  const won = prizesOf(kid) > before;
+  if (won) pendingPrize = { kid, n: prizesOf(kid), rankUp: rankIdx(kid) > rankBefore };
+  const cb = $("#candy");
+  if (fromEl && cb) {
+    const r = fromEl.getBoundingClientRect(), c = cb.getBoundingClientRect();
     const p = document.createElement("div");
-    p.className = "pop"; p.textContent = n > 0 ? "🍬+1" : "🍬−1";
+    p.className = "pop"; p.textContent = "🍬+1";
     p.style.left = r.left + r.width / 2 + "px"; p.style.top = r.top + "px";
     document.body.appendChild(p);
     requestAnimationFrame(() => {
-      p.style.transform = n > 0 ? `translate(${c.left + c.width / 2 - r.left - r.width / 2}px, ${c.top - r.top}px)` : "translateY(80px)";
+      p.style.transform = `translate(${c.left + c.width * .08 - r.left - r.width / 2}px, ${c.bottom - r.top}px)`;
       p.style.opacity = "0";
     });
     setTimeout(() => p.remove(), 1000);
   }
-  const cb = $("#candy");
-  if (cb && cb.classList.contains("vbar")) {
-    const goal = GATE[kid.level] || 20, left = Math.max(0, goal - next);
-    cb.setAttribute("aria-label", `${next} סוכריות, ${left ? `עוד ${left} לשלב הבא` : "אפשר לעבור שלב"}`);
-    barMove(cb, barT(Math.min(1, next / goal)));
-  } else if (cb) cb.outerHTML = candyBar(kid);
+  if (!cb) return;
+  const p = won ? 1 : (kid.candies % PER_PRIZE) / PER_PRIZE;
+  if (cb.classList.contains("vbar")) {
+    cb.setAttribute("aria-label", `${kid.candies} סוכריות, עוד ${toPrize(kid)} לפרס הבא`);
+    barMove(cb, barT(p));
+  } else {
+    const keep = cb.classList.contains("painted");
+    cb.outerHTML = candyBar(kid, keep);
+    if (won) { const g = $("#candy .pgrey"); if (g) g.remove(); }
+  }
+  setTimeout(() => {
+    const cnt = $("#candy .ccount"); if (!cnt) return;
+    cnt.textContent = "🍬 " + kid.candies;
+    cnt.classList.remove("bump"); void cnt.offsetWidth; cnt.classList.add("bump");
+  }, 850);
 }
 
 // ---------- the running kid ----------
@@ -844,6 +940,8 @@ function hub(kidId) {
     <img class="scene-img" src="${HUB_IMG}" alt="">
     ${candyBar(kid, true)}
     <span class="hub-hi">שָׁלוֹם ${esc(kid.name)}!</span>
+    <span class="hub-rank">${RANKS[rankIdx(kid)][0]} ${RANKS[rankIdx(kid)][1]}</span>
+    ${jarHtml(kid)}
     <span class="hub-lbl b">סְפָרִים</span><span class="hub-lbl n">שִׁעוּרִים</span>
     <button class="spot book" id="go-books" aria-label="ספרים · ${lib.books.length} ספרים על המדף"></button>
     <button class="spot nb" id="go-lessons" aria-label="שיעורים"></button>
@@ -855,6 +953,7 @@ function hub(kidId) {
   $("#parent").onclick = parentGate;
   $("#go-lessons").onclick = () => lessonList(kidId);
   $("#go-books").onclick = () => bookShelf(kidId);
+  $("#jar").onclick = () => trophies(kid);
 }
 
 function storyButton(kidId, s, i, open, sub) {
@@ -1070,9 +1169,9 @@ function read(kidId, story, back, nextStory) {
         $("#page").querySelectorAll(".opt").forEach(o => o.disabled = true);
         $("#controls").innerHTML = "";
         segStart = shown.length;
-        animateCorrect(() => { run.qs.push(rec); next(); });
+        animateCorrect(() => prizeShow(() => { run.qs.push(rec); next(); }));
       } else {
-        b.classList.add("wrong"); b.disabled = true; beep("bad"); addCandy(kid, -1, b);
+        b.classList.add("wrong"); b.disabled = true; beep("bad");
         rec.wrong.push(st.options[+b.dataset.k]);
         animateWrong(() => { busy = false; });
       }
@@ -1152,7 +1251,7 @@ function parent() {
         <div class="table-wrap"><table><thead><tr><th>שאלה</th><th>זמן לתשובה</th><th>תוצאה</th><th>טעה ב־</th></tr></thead><tbody>${qRows}</tbody></table></div></details>`;
     }).join("") || `<p class="muted">עוד לא קרא כלום.</p>`;
     return `<section class="panel">
-      <div class="row"><h2>${esc(kid.name)}</h2><span class="muted">כיתה ${GRADES[(kid.grade || 1) - 1]}׳${id === state.me ? ` · הילד של המכשיר הזה · ${kid.levelCandies[kid.level] || 0} סוכריות` : ""}</span></div>
+      <div class="row"><h2>${esc(kid.name)}</h2><span class="muted">כיתה ${GRADES[(kid.grade || 1) - 1]}׳${id === state.me ? ` · הילד של המכשיר הזה · ${kid.candies || 0} סוכריות · ${prizesOf(kid)} פרסים · ${plain(RANKS[rankIdx(kid)][1])}` : ""}</span></div>
       <div class="stats">
         <div class="stat"><b>${s.ids.length}/${all.length}</b><span>שיעורים ופרקים שקרא</span></div>
         <div class="stat"><b>${s.qs ? Math.round(100 * s.first / s.qs) : 0}%</b><span>נכון בפעם הראשונה (${s.first} מתוך ${s.qs})</span></div>
