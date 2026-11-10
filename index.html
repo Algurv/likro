@@ -1022,34 +1022,24 @@ function bookIcon(bk) {
   return ICON_NAMES[2 + h % (ICON_NAMES.length - 2)];
 }
 let shelfPage = 0;
-function bookShelf(kidId, page) {
+function bookShelf(kidId) {
   const kid = state.kids[kidId];
   refresh = () => bookShelf(kidId);
   const books = library(kidId).books;
-  const pages = Math.max(1, Math.ceil(books.length / 2));
-  shelfPage = Math.min(pages - 1, Math.max(0, page != null ? page : shelfPage));
-  const slot = (bk, n) => {
-    if (!bk) return `<div class="shslot s${n} empty"><div class="plaque">ספר חדש</div><div class="parch">יַגִּיעַ בְּקָרוֹב</div>
-      <div class="bookbtn"><img src="${BOOK_ICONS.moon}" alt=""></div></div>`;
-    const st = storiesOf(bk), read = st.filter(s => isDone(kidId, s.id)).length, i = books.indexOf(bk);
-    const status = read === st.length ? `<span class="done">✓ סִיַּמְתָּ!</span>` : read ? `פרק ${read + 1}<small>קראת ${read} מתוך ${st.length}</small>` : `ספר חדש!<small>${st.length} פרקים</small>`;
-    return `<div class="shslot s${n}"><div class="plaque">${esc(bk.title)}</div><div class="parch">${status}</div>
-      <button class="bookbtn" data-i="${i}" aria-label="${esc(bk.title)}"><img src="${BOOK_ICONS[bookIcon(bk)]}" alt=""></button></div>`;
+  const tile = (bk, i) => {
+    const st = storiesOf(bk), read = st.filter(s => isDone(kidId, s.id)).length;
+    const sub = read === st.length ? `סיימת! ${st.length} פרקים` : read ? `פרק ${read + 1} · קראת ${read} מתוך ${st.length}` : `${st.length} פרקים`;
+    return `<button class="lsbtn" data-i="${i}" aria-label="${esc(bk.title)}"><img src="${BOOK_ICONS[bookIcon(bk)]}" alt="">
+      ${read === st.length ? `<span class="tick">✓</span>` : read ? "" : `<span class="new">חדש!</span>`}
+      <span class="tag">${esc(bk.title)}<small>${esc(sub)}</small></span></button>`;
   };
-  const two = books.slice(shelfPage * 2, shelfPage * 2 + 2);
-  app.innerHTML = `<div class="screen room"><div class="scene shelfscene theatre" data-ar="1.3396" data-safe=".9"><img class="scene-img" src="${THEATER_IMG}" alt="">
-    <div class="th-bar">${candyBar(kid)}</div>
-    <div class="sh-title">📚 המדף של ${esc(kid.name)}</div>
-    <button class="icon-btn th-back" id="back">→ חזרה</button>
-    ${slot(two[0], 0)}${slot(two[1], 1)}
-    ${pages > 1 && shelfPage > 0 ? `<button class="pager prev" id="prev" aria-label="הקודם">▶</button>` : ""}
-    ${pages > 1 && shelfPage < pages - 1 ? `<button class="pager next" id="next" aria-label="הבא">◀</button>` : ""}
-    <div class="sh-hint">${pages > 1 ? `מדף ${shelfPage + 1} מתוך ${pages} · ` : ""}לחיצה ארוכה על ספר מחליפה לו כריכה</div>
-  </div></div>`;
+  app.innerHTML = `<div class="screen room chroom">
+    <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📚 המדף של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
+    ${books.length ? `<p class="ls-hint">לחיצה ארוכה על ספר מחליפה לו כריכה</p>` : `<div class="gate">עוד אין ספרים. כשאבא או אמא יעלו ספר, הוא יופיע כאן.</div>`}
+    <div class="lsgrid">${books.map(tile).join("")}</div>
+  </div>`;
   $("#back").onclick = () => hub(kidId);
-  $("#prev") && ($("#prev").onclick = () => bookShelf(kidId, shelfPage - 1));
-  $("#next") && ($("#next").onclick = () => bookShelf(kidId, shelfPage + 1));
-  app.querySelectorAll(".bookbtn[data-i]").forEach(b => {
+  app.querySelectorAll(".lsbtn[data-i]").forEach(b => {
     const bk = books[+b.dataset.i];
     longPress(b, () => iconPicker(`בְּחַר כְּרִיכָה לַסֵּפֶר: ${bk.title}`, ICON_NAMES, BOOK_ICONS, bookIcon(bk), n => {
       state.bookIcons = Object.assign({}, state.bookIcons, { [bk.id]: n }); save();
