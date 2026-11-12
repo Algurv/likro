@@ -425,11 +425,11 @@ body:has(.mathscr) #stagebg { display: none; }
 .mboard .count { position: absolute; top: 5%; left: 4%; font-size: 3.6cqh; opacity: .75; direction: ltr; }
 .mboard .ex.write { animation: chalk .6s ease-out; }
 @keyframes chalk { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-.mdisp { position: absolute; left: 43.4%; top: 55%; width: 14.2%; height: 4.6%; z-index: 2; display: flex; align-items: center; justify-content: flex-end; padding: 0 .6cqh; box-sizing: border-box; direction: ltr;
-  font-family: "Varela Round", monospace; font-size: 4.6cqh; color: #12304a; letter-spacing: .12em; text-shadow: 0 0 4px #9fe6ff; pointer-events: none; transition: opacity .2s; }
+.mdisp { position: absolute; left: 43.2%; top: 54.6%; width: 14.6%; height: 5.4%; z-index: 2; display: flex; align-items: center; justify-content: flex-end; padding: 0 1cqh; box-sizing: border-box; direction: ltr; border-radius: 3px;
+  background: linear-gradient(#0b1f14, #133222); box-shadow: inset 0 0 6px #000; font-family: "Varela Round", monospace; font-weight: 700; font-size: 4.6cqh; line-height: 1; color: #8dffb8; letter-spacing: .15em; text-shadow: 0 0 6px #4dff9a; pointer-events: none; transition: opacity .2s; }
 .mdisp.empty::after { content: "_"; animation: blink 1s steps(1) infinite; }
-.mdisp.ok { color: #0f7a3a; text-shadow: 0 0 6px #b6ffcf; }
-.mdisp.no { color: #c0141a; text-shadow: 0 0 6px #ffc2c2; }
+.mdisp.ok { color: #b6ffcf; text-shadow: 0 0 10px #4dff9a; }
+.mdisp.no { color: #ff8a8a; text-shadow: 0 0 8px #ff3030; }
 @keyframes blink { 50% { opacity: 0; } }
 .mkey { position: absolute; width: 3.9%; height: 5%; transform: translate(-50%, -50%); z-index: 3; border: 0; padding: 0; background: transparent; border-radius: 50%; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: opacity .2s; }
 .mkey.down { background: radial-gradient(#0000 40%, #3a1a0566 70%); box-shadow: inset 0 3px 6px #000a; }
@@ -1342,7 +1342,7 @@ function mathScreen(kidId, back) {
   const sc = $(".mathscene"), disp = $("#disp"), crank = $("#crank");
   $("#back").onclick = back;
 
-  const showDisp = cls => { disp.textContent = typed; disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", !!typed && !busy); crank.innerHTML = typed && !busy ? `<span class="arrow">↻</span>` : ""; };
+  const showDisp = cls => { disp.textContent = typed; const an = $("#ans"); if (an) an.textContent = typed || "?"; disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", !!typed && !busy); crank.innerHTML = typed && !busy ? `<span class="arrow">↻</span>` : ""; };
   const board = (html, write) => { $("#board").innerHTML = `<span class="count">${idx + 1} / ${round.length}</span>${html}`; if (write) { const e = $("#board .ex"); e && e.classList.add("write"); } };
   const say = (text, bad) => { sc.querySelectorAll(".mbub").forEach(b => b.remove()); if (!text) return; const b = document.createElement("div"); b.className = "mbub" + (bad ? " bad" : ""); b.textContent = text; sc.appendChild(b); setTimeout(() => b.remove(), 2200); };
   const fx = (cls, txt, x, y, vars) => { const el = document.createElement("div"); el.className = "mfx " + cls; el.textContent = txt; el.style.left = x + "%"; el.style.top = y + "%"; for (const k in vars) el.style.setProperty(k, vars[k]); sc.appendChild(el); setTimeout(() => el.remove(), 1800); };
@@ -1352,7 +1352,7 @@ function mathScreen(kidId, back) {
     const e = round[idx];
     rec = { question: exText(e).replace(" =", ""), attempts: 0, ms: 0, wrong: [], rereads: 0 };
     typed = ""; busy = false; t0 = performance.now();
-    board(`<span class="ex">${exText(e)} <b>?</b></span><span class="hint">הַקֵּשׁ תְּשׁוּבָה וְסוֹבֵב אֶת הַיָּדִית</span>`, true);
+    board(`<span class="ex">${exText(e)} <b id="ans">?</b></span><span class="hint">הַקֵּשׁ אֶת כָּל הַמִּסְפָּר, וְאָז סוֹבֵב אֶת הַיָּדִית</span>`, true);
     showDisp();
   }
 
