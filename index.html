@@ -412,7 +412,7 @@ input.wide { width: 100%; box-sizing: border-box; }
 body:has(.mathscr) #stagebg { display: none; }
 .mathscene { container-type: size; width: min(100%, calc((100dvh - 12px) * 1024 / 572)); aspect-ratio: 1024 / 572; }
 .mathscene > .mvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; opacity: 0; pointer-events: none; z-index: 1; transition: opacity .3s; }
-.mathscene.vplaying > .mvid { opacity: 1; }
+.mathscene > .mvid.on { opacity: 1; }
 .mathscene.vplaying > .mkey, .mathscene.vplaying > .mdisp, .mathscene.vplaying > .crank { opacity: 0; }
 .mathscene > .topbar { position: absolute; top: 2%; right: 1.5%; z-index: 4; }
 .mathscene > .mbar { position: absolute; left: 1.5%; top: 4.5%; width: 25%; z-index: 4; }
@@ -445,7 +445,7 @@ body:has(.mathscr) #stagebg { display: none; }
 .mathscene.shake > .scene-img, .mathscene.shake > .mkey, .mathscene.shake > .mdisp { animation: regshake .5s linear; }
 .mathscene.bigshake > .scene-img { animation: regshake .9s linear; }
 @keyframes regshake { 10%, 50%, 90% { transform: translate(-3px, 1px) rotate(-.4deg); } 30%, 70% { transform: translate(3px, -1px) rotate(.4deg); } }
-.mfx { position: absolute; z-index: 3; pointer-events: none; font-size: 6cqh; line-height: 1; }
+.mfx { position: absolute; z-index: 3; pointer-events: none; font-size: 7cqh; line-height: 1; filter: drop-shadow(0 2px 3px #0008); }
 .mfx.coin { animation: coin 1.4s cubic-bezier(.2, .7, .4, 1) forwards; }
 @keyframes coin { 0% { transform: translate(0, 0) scale(.4); opacity: 0; } 15% { opacity: 1; } 60% { transform: translate(var(--dx), var(--dy)) scale(1) rotate(var(--r)); opacity: 1; } 100% { transform: translate(var(--dx), calc(var(--dy) + 40cqh)) scale(1) rotate(var(--r)); opacity: 0; } }
 .mfx.smoke { width: 9cqh; height: 9cqh; border-radius: 50%; background: radial-gradient(#9a9a9aee, #6a6a6a88 60%, transparent 72%); animation: smoke 1.6s ease-out forwards; }
@@ -1373,10 +1373,10 @@ function mathScreen(kidId, back) {
     const v = $(kind === "good" ? "#mgood" : "#mbad");
     if (!v) return done();
     let over = false;
-    const end = () => { if (over) return; over = true; v.pause(); v.removeEventListener("timeupdate", tick); sc.classList.remove("vplaying"); setTimeout(() => { v.currentTime = 0; done(); }, 300); };
+    const end = () => { if (over) return; over = true; v.pause(); v.removeEventListener("timeupdate", tick); sc.classList.remove("vplaying"); v.classList.remove("on"); setTimeout(() => { v.currentTime = 0; done(); }, 300); };
     const tick = () => { if (v.currentTime >= VID_STOP[kind]) end(); };
     v.addEventListener("timeupdate", tick);
-    sc.classList.add("vplaying"); v.currentTime = 0; v.muted = !!state.muted; v.onended = end;
+    sc.classList.add("vplaying"); v.classList.add("on"); v.currentTime = 0; v.muted = !!state.muted; v.onended = end;
     const pr = v.play(); if (pr && pr.catch) pr.catch(() => { v.muted = true; v.play().catch(end); });
     setTimeout(end, VID_STOP[kind] * 1000 + 3000);  // never get stuck if the video can't play
   }
@@ -1394,7 +1394,7 @@ function mathScreen(kidId, back) {
       showDisp("ok");
       if (hasVid.good) {   // the handle turns, the bell rings and the coins jump out (at about 2s)
         board(`<span class="ex">${exText(e)} <b>${e.ans}</b></span>`, true);
-        setTimeout(() => { say("כָּל הַכָּבוֹד!"); screenConfetti(); }, 2000);
+        setTimeout(() => { say("כָּל הַכָּבוֹד!"); screenConfetti(); for (let i = 0; i < 16; i++) setTimeout(() => fx("coin", "🪙", 50 + rnd(-8, 8), 82, { "--dx": rnd(-30, 30) + "cqh", "--dy": -rnd(22, 42) + "cqh", "--r": rnd(-300, 300) + "deg" }), i * 60); }, 2000);
         playVid("good", next);
         return;
       }
