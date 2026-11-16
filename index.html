@@ -477,6 +477,25 @@ body:has(.mathscr) #stagebg { display: none; }
 .mboard .mtbtns { pointer-events: auto; display: flex; gap: 3cqh; margin-top: 1cqh; }
 .mboard .mtbtns button { font: inherit; font-size: 4cqh; padding: .3cqh 2.6cqh; border-radius: 3cqh; border: .4cqh solid #f4f1e6; background: #ffffff22; color: #f4f1e6; cursor: pointer; touch-action: manipulation; }
 .mathscene.tray > .mdisp { visibility: hidden; }
+.mboard .ex.mleq { font-size: 8.5cqh; margin-top: 1.2cqh; }
+.mboard .mpic { display: flex; flex-direction: column; align-items: center; gap: .8cqh; direction: ltr; }
+.mboard .mstrip { display: flex; gap: 1.2cqh; }
+.mboard .mstrip > span { display: flex; background: #cfe0f0; border: .3cqh solid #e6a35a; border-radius: .8cqh; overflow: hidden; }
+.mboard .mstrip i { width: 4.6cqh; height: 4.6cqh; display: grid; place-items: center; border-left: .2cqh solid #9fb6cc; font-style: normal; font-size: 3.2cqh; text-shadow: none; }
+.mboard .mstrip i:first-child { border-left: 0; }
+.mboard .mstrip i.b::after, .mboard .mstrip i.o::after { content: ""; width: 72%; height: 72%; border-radius: 50%; background: #4a78c8; }
+.mboard .mstrip i.o::after { background: #f0a020; }
+.mboard .mstrip i.f { filter: none; } .mboard .mstrip i.fx { opacity: .28; filter: grayscale(1); }
+.mboard .mrow { display: flex; align-items: center; gap: 2.4cqh; }
+.mboard .memo { font-size: 6.5cqh; letter-spacing: .2cqh; text-shadow: none; }
+.mboard .memo .ghost { opacity: .3; filter: grayscale(1); }
+.mboard .mwp { display: grid; grid-template-columns: 1fr 1fr; gap: .6cqh; background: #f6d9a8; padding: .8cqh; border-radius: 1cqh; text-shadow: none; }
+.mboard .mwp > span { background: #fff; color: #1b2a3a; border-radius: .6cqh; min-width: 8cqh; text-align: center; font-size: 4.6cqh; line-height: 1.1; padding: .2cqh .6cqh; }
+.mboard .mwp > span small { display: block; font-size: 2.4cqh; color: #3a6ab0; font-family: "Suez One", var(--font-ui); }
+.mboard .mwp > span.w { grid-column: 1 / 3; justify-self: center; border: .3cqh solid #3a7ad8; }
+.mboard .mdot { display: inline-block; width: .8em; height: .8em; border-radius: 50%; background: #9a9a9a; vertical-align: -.05em; box-shadow: inset 0 -.08em .1em #0004; }
+.mboard .mcode { font-size: 5cqh; background: #fffaf0; color: #222; border: .3cqh solid #222; padding: 0 1.6cqh; text-shadow: none; direction: ltr; }
+
 @media (prefers-reduced-motion: reduce) { .mfx, .crank.ready, .crank .arrow, .mathscene.shake > *, .mathscene.bigshake > * { animation: none !important; } }
 </style>
 
@@ -1346,6 +1365,34 @@ const exText = e => `${e.a} ${e.op} ${e.b} =`;
 // Workbook pages dad photographs, made into register lessons. kind: seq = counting backwards with holes,
 // plate = digits 0-9 that are not on a license plate, tray = add / erase cookies until both kinds are equal.
 const MATH_LESSONS = [{
+  id: "math-p112", title: "חִבּוּר עַד 10", sub: "חוֹבֶרֶת חֶשְׁבּוֹן",
+  forKid: (kidId, kid) => kidId === "small" || (kid.grade || 1) <= 1,
+  make() {
+    const items = [], eq = (title, pic, text, ans, hint) => items.push({ kind: "eq", title, pic, text, ans, hint, q: text.replace("_", "?") });
+    const cells = (n, cls, from = 0) => [...Array(5).keys()].map(i => `<i class="${i + from < n ? cls : ""}"></i>`).join("");
+    const strip = (a, ca, b = 0) => `<div class="mstrip">${[0, 5].map(s => `<span>${[...Array(5).keys()].map(i => { const k = s + i; return `<i class="${k < a ? ca : k < a + b ? "o" : ""}"></i>`; }).join("")}</span>`).join("")}</div>`;
+    const fish = n => `<div class="mstrip">${[0, 5].map(s => `<span>${[...Array(5).keys()].map(i => `<i class="${s + i < n ? "f" : "fx"}">🐟</i>`).join("")}</span>`).join("")}</div>`;
+    // page 112: different sums that make 10
+    [3, 7, 5, 8].forEach(a => eq("כַּמָּה דָּגִים חֲסֵרִים עַד 10?", fish(a), `${a} + _ = 10`, 10 - a));
+    eq("שְׁלֹשָׁה חֲלָקִים, וְהַשָּׁלֵם 10", fish(10), "2 + 3 + _ = 10", 5);
+    // page 113: the whole is 5 / one part is 5
+    [1, 2, 0, 4].forEach(a => eq("הַשָּׁלֵם הוּא 5", strip(a, "b"), `${a} + _ = 5`, 5 - a, "כַּמָּה דִּסְקִיּוֹת חֲסֵרוֹת עַד 5?"));
+    [9, 6, 8, 10].forEach(w => eq("אֶחָד הַחֲלָקִים הוּא 5", strip(5, "o"), `5 + _ = ${w}`, w - 5, `כַּמָּה דִּסְקִיּוֹת לְהוֹסִיף עַד ${w}?`));
+    // page 114: secret code, the grey circle costs 4
+    const dot = `<span class="mdot"></span>`, code = `<span class="mcode">${dot} = 4</span>`;
+    [["🍞", `${dot} + 2 = _`, 6], ["🍰", `6 + ${dot} = _`, 10], ["🥧", `${dot} + ${dot} = _`, 8], ["🥐", `0 + ${dot} = _`, 4]]
+      .forEach(([p, t, ans]) => eq("כְּתַב סְתָרִים: מָה הַמְּחִיר?", `<div class="mrow"><span class="memo">${p}</span>${code}</div>`, t, ans, "הָעִגּוּל הָאָפֹר שָׁוֶה 4"));
+    // page 115: check yourself
+    const wp = (a, b) => `<div class="mwp"><span class="w"><small>שָׁלֵם</small>?</span><span><small>חֵלֶק</small>${a}</span><span><small>חֵלֶק</small>${b}</span></div>`;
+    eq("כַּמָּה בַּיַּחַד?", `${strip(4, "b")}${strip(0, "b", 6)}`, "4 + 6 = _", 10);
+    eq("מָה הַשָּׁלֵם?", wp(3, 1), "3 + 1 = _", 4);
+    eq("מָה הַשָּׁלֵם?", wp(2, 5), "2 + 5 = _", 7);
+    eq("עוֹד 3 פְּרָחִים", `<div class="memo">🌸🌸🌸🌸🌸<span class="ghost">🌸🌸🌸</span></div>`, "5 + 3 = _", 8);
+    eq("עוֹד 2 דָּגִים", `<div class="memo">🐠🐠🐠🐠🐠🐠🐠<span class="ghost">🐠🐠</span></div>`, "7 + 2 = _", 9);
+    [[2, 3], [1, 5], [0, 3]].forEach(([a, b]) => eq("פִּתְרוּ", "", `${a} + ${b} = _`, a + b));
+    return items;
+  },
+}, {
   id: "math-p76", title: "סוֹפְרִים, לוּחִיּוֹת וְעוּגִיּוֹת", sub: "חוֹבֶרֶת חֶשְׁבּוֹן",
   forKid: (kidId, kid) => kidId === "small" || (kid.grade || 1) <= 1,
   make() {
@@ -1368,6 +1415,8 @@ const MATH_LESSONS = [{
 const trayCount = e => { const n = { c: 0, h: 0 }; e.ck.forEach(k => { if (!k.gone) n[k.t]++; }); return n; };
 const trayChanged = e => e.ck.some(k => k.added || k.gone);
 function mlBoard(e, solved) {
+  if (e.kind === "eq") return `<span class="mtitle">${e.title}</span>${e.pic ? `<div class="mpic">${e.pic}</div>` : ""}
+    <span class="ex mleq">${e.text.replace("_", solved ? `<b>${e.ans}</b>` : `<b id="ans">?</b>`)}</span>${e.hint && !solved ? `<span class="hint ml">${e.hint}</span>` : ""}`;
   if (e.kind === "seq") {
     const cells = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map(n => {
       const hole = e.holes.includes(n), shown = !hole || e.grp.filled.includes(n);
@@ -1392,6 +1441,7 @@ function mlBoard(e, solved) {
 }
 // The kid's answer for a lesson item: {ok, why} counts as a try; {again} just asks again without counting.
 function mlCheck(e, typed) {
+  if (e.kind === "eq") return { ok: +typed === e.ans };
   if (e.kind === "seq") return { ok: +typed === e.ans };
   if (e.kind === "plate") {
     const v = +typed;
@@ -1408,6 +1458,7 @@ function mlCheck(e, typed) {
 }
 // After two wrong tries the teacher shows one right answer.
 function mlReveal(e) {
+  if (e.kind === "eq") return "הַתְּשׁוּבָה הִיא " + e.ans;
   if (e.kind === "seq") { e.grp.filled.push(e.ans); return "הַתְּשׁוּבָה הִיא " + e.ans; }
   if (e.kind === "plate") { const v = e.missing.find(d => !e.grp.found.includes(d)); e.grp.found.push(v); e.ans = v; return `אֵין ${v} עַל הַלּוּחִית`; }
   const c0 = e.base.filter(t => t === "c").length, h0 = e.base.length - c0;
