@@ -455,6 +455,28 @@ body:has(.mathscr) #stagebg { display: none; }
 .mdrawer { position: absolute; left: 36.6%; top: 81%; width: 27.5%; height: 13.5%; z-index: 2; pointer-events: none; border-radius: 4px; background: linear-gradient(#5a3010, #2a1205); box-shadow: inset 0 6px 10px #000c; transform: scaleY(0); transform-origin: top; transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
 .mdrawer.open { transform: scaleY(1); }
 .mdrawer::after { content: "🪙🪙🪙🪙🪙"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 5cqh; letter-spacing: -.3em; }
+/* workbook math lessons: counting, plates, cookie trays */
+.mboard:has(.mtitle) .count { top: auto; bottom: 4%; }
+.mboard .hint.ml { font-size: 3.6cqh; max-width: 92%; text-align: center; margin-top: 1.6cqh; line-height: 1.25; }
+.mboard .mtitle { font-family: "Suez One", var(--font-ui); font-size: 4.4cqh; margin-bottom: 1.4cqh; white-space: nowrap; }
+.mboard .mseq { direction: rtl; display: flex; gap: .3cqh; font-size: 5.2cqh; line-height: 1.2; align-items: baseline; white-space: nowrap; }
+.mboard .mseq i { font-style: normal; opacity: .4; }
+.mboard .mseq .sep { opacity: .55; margin-left: .7cqh; }
+.mboard .mseq i, .mboard .mseq b { display: inline-block; min-width: 3cqh; text-align: center; }
+.mboard .mseq b, .mboard .mfound b { color: #ffe27a; font-weight: 400; border-bottom: .4cqh solid #ffe27a; min-width: 3.6cqh; text-align: center; }
+.mboard .got { color: #a8f7a8; }
+.mboard .mplate { direction: ltr; background: #f7d23a; color: #1b1b1b; border: .5cqh solid #1b1b1b; border-radius: 1.4cqh; padding: .3cqh 2.2cqh; font-size: 7.4cqh; letter-spacing: .08em; text-shadow: none; white-space: nowrap; }
+.mboard .mfound { display: flex; gap: 2.4cqh; font-size: 6.6cqh; margin-top: 1.6cqh; direction: ltr; }
+.mboard .mtray { pointer-events: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: .6cqh; width: 86%; max-width: 64cqh; padding: .8cqh 1cqh; background: #efe7d3; border: .9cqh solid #3a3d42; border-radius: 2cqh; box-sizing: border-box; direction: rtl; }
+.mboard .ck { width: 5.4cqh; height: 5.4cqh; font-size: 4.3cqh; line-height: 1; background: none; border: 0; padding: 0; position: relative; cursor: pointer; display: grid; place-items: center; text-shadow: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.mboard .ck.h { background: radial-gradient(circle, #fffaf0 52%, #e3bd78 56%, #e3bd78 64%, transparent 67%); font-size: 2.5cqh; }
+.mboard .ck.add { animation: ckpop .3s ease-out; }
+.mboard .ck.gone > span { opacity: .28; }
+.mboard .ck.gone::after { content: "✖"; position: absolute; inset: 0; display: grid; place-items: center; color: #e0201a; font-size: 5.4cqh; }
+@keyframes ckpop { from { transform: scale(0); } }
+.mboard .mtbtns { pointer-events: auto; display: flex; gap: 3cqh; margin-top: 1cqh; }
+.mboard .mtbtns button { font: inherit; font-size: 4cqh; padding: .3cqh 2.6cqh; border-radius: 3cqh; border: .4cqh solid #f4f1e6; background: #ffffff22; color: #f4f1e6; cursor: pointer; touch-action: manipulation; }
+.mathscene.tray > .mdisp { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) { .mfx, .crank.ready, .crank .arrow, .mathscene.shake > *, .mathscene.bigshake > * { animation: none !important; } }
 </style>
 
@@ -1088,10 +1110,11 @@ function lessonList(kidId) {
   app.innerHTML = `<div class="screen room chroom">
     <div class="topbar"><button class="icon-btn" id="back">→ חזרה</button><h2>📝 השיעורים של ${esc(kid.name)}</h2><span class="spacer"></span>${candyBar(kid)}</div>
     ${lessons.length ? `<p class="ls-hint">לחיצה ארוכה על שיעור מחליפה לו תמונה</p>` : ""}
-    ${shelfCase([mathTile(kidId), ...lessons.map(tile)], "lessons", () => lessonList(kidId))}
+    ${shelfCase([mathTile(kidId), ...MATH_LESSONS.filter(L => L.forKid(kidId, kid)).map(L => mathLessonTile(L, kidId)), ...lessons.map(tile)], "lessons", () => lessonList(kidId))}
   </div>`;
   $("#back").onclick = () => hub(kidId);
   const mb = $("#go-math"); if (mb) mb.onclick = () => mathScreen(kidId, () => lessonList(kidId));
+  app.querySelectorAll(".lsbtn[data-ml]").forEach(b => b.onclick = () => mathScreen(kidId, () => lessonList(kidId), MATH_LESSONS.find(L => L.id === b.dataset.ml)));
   app.querySelectorAll(".lsbtn[data-i]").forEach(b => {
     const l = lessons[+b.dataset.i];
     longPress(b, () => iconPicker(`בְּחַר תְּמוּנָה לַשִּׁעוּר: ${l.title}`, LESSON_ICON_PICK, LESSON_ICONS, lessonIcon(l), n => {
@@ -1320,11 +1343,95 @@ function mathRound(grade) {
 }
 const exText = e => `${e.a} ${e.op} ${e.b} =`;
 
-function mathScreen(kidId, back) {
+// Workbook pages dad photographs, made into register lessons. kind: seq = counting backwards with holes,
+// plate = digits 0-9 that are not on a license plate, tray = add / erase cookies until both kinds are equal.
+const MATH_LESSONS = [{
+  id: "math-p76", title: "סוֹפְרִים, לוּחִיּוֹת וְעוּגִיּוֹת", sub: "חוֹבֶרֶת חֶשְׁבּוֹן",
+  forKid: (kidId, kid) => kidId === "small" || (kid.grade || 1) <= 1,
+  make() {
+    const items = [];
+    [["👧", [7, 3]], ["👦", [8, 4, 1]], ["🧢", [9, 6, 5]]].forEach(([who, holes]) => {
+      const grp = { filled: [] };
+      holes.forEach(n => items.push({ kind: "seq", who, holes, grp, ans: n, q: `סופרים לאחור 10 עד 0: חסר ${n}` }));
+    });
+    ["076-72-432", "38-201-59"].forEach(plate => {
+      const digits = plate.replace(/\D/g, ""), missing = [...Array(10).keys()].filter(d => !digits.includes(String(d))), grp = { found: [] };
+      missing.forEach(() => items.push({ kind: "plate", plate, missing, grp, q: `לוחית ${plate}: ספרה שאין` }));
+    });
+    const add = { done: [] }, era = { done: [] };
+    const T3 = "hhcccchch".split(""), T4 = "hhcccchhhchcchchh".split("");
+    [0, 1].forEach(opt => items.push({ kind: "tray", mode: "add", opt, base: T3, grp: add, q: `מוסיפים עוגיות (5 שוקולד, 4 לב) אפשרות ${opt + 1}` }));
+    [0, 1].forEach(opt => items.push({ kind: "tray", mode: "erase", opt, base: T4, grp: era, q: `מוחקים עוגיות (8 שוקולד, 9 לב) אפשרות ${opt + 1}` }));
+    return items;
+  },
+}];
+const trayCount = e => { const n = { c: 0, h: 0 }; e.ck.forEach(k => { if (!k.gone) n[k.t]++; }); return n; };
+const trayChanged = e => e.ck.some(k => k.added || k.gone);
+function mlBoard(e, solved) {
+  if (e.kind === "seq") {
+    const cells = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map(n => {
+      const hole = e.holes.includes(n), shown = !hole || e.grp.filled.includes(n);
+      if (shown) return `<span class="${hole ? "got" : ""}">${n}</span>`;
+      return n === e.ans ? `<b id="ans">?</b>` : `<i>_</i>`;
+    });
+    return `<span class="mtitle">${e.who} סוֹפְרִים לְאָחוֹר</span><span class="mseq">${cells.join(`<span class="sep">,</span>`)}</span><span class="hint ml">אֵיזֶה מִסְפָּר חָסֵר בִּמְקוֹם הַ־?</span>`;
+  }
+  if (e.kind === "plate") {
+    let first = true;
+    const slots = e.missing.map(d => e.grp.found.includes(d) ? -1 : d).sort((a, b) => a - b).map((d, i) => {
+      if (d < 0) return null; const s = `<b ${first ? `id="ans"` : ""}>?</b>`; first = false; return s; }).filter(Boolean);
+    const found = [...e.grp.found].sort((a, b) => a - b).map(d => `<span class="got">${d}</span>`);
+    return `<span class="mtitle">אֵילוּ סְפָרוֹת אֵין עַל הַלּוּחִית?</span><span class="mplate">${e.plate}</span>
+      <span class="mfound">${[...found, ...slots].join("")}</span><span class="hint ml">${solved && !slots.length ? "מְצָאתָ אֶת כֻּלָּן!" : "הַקֵּשׁ סִפְרָה שֶׁאֵין עַל הַלּוּחִית"}</span>`;
+  }
+  const add = e.mode === "add";
+  return `<span class="mtitle">${add ? "מוֹסִיפִים" : "מוֹחֲקִים"} עוּגִיּוֹת · ${e.opt ? "אֶפְשָׁרוּת אַחֶרֶת" : "אֶפְשָׁרוּת אַחַת"}</span>
+    <div class="mtray">${e.ck.map((k, i) => `<button class="ck ${k.t}${k.added && !k.old ? " add" : ""}${k.gone ? " gone" : ""}" data-ck="${i}"><span>${k.t === "c" ? "🍪" : "❤️"}</span></button>`).join("")}</div>
+    ${add && !solved ? `<div class="mtbtns"><button data-add="c">+ 🍪</button><button data-add="h">+ ❤️</button></div>` : ""}
+    <span class="hint ml">${solved ? "אוֹתוֹ מִסְפָּר מִכָּל סוּג!" : add ? "צָרִיךְ אוֹתוֹ מִסְפָּר מִכָּל סוּג" : "לְחַץ עַל עוּגִיָּה כְּדֵי לִמְחֹק אוֹתָהּ. צָרִיךְ אוֹתוֹ מִסְפָּר מִכָּל סוּג"}</span>`;
+}
+// The kid's answer for a lesson item: {ok, why} counts as a try; {again} just asks again without counting.
+function mlCheck(e, typed) {
+  if (e.kind === "seq") return { ok: +typed === e.ans };
+  if (e.kind === "plate") {
+    const v = +typed;
+    if (typed.length > 1) return { again: "רַק סִפְרָה אַחַת 🙂" };
+    if (e.grp.found.includes(v)) return { again: `אֶת ${v} כְּבָר מָצָאתָ 🙂` };
+    if (e.missing.includes(v)) { e.grp.found.push(v); e.ans = v; return { ok: true }; }
+    return { ok: false, why: `יֵשׁ ${v} עַל הַלּוּחִית` };
+  }
+  const n = trayCount(e);
+  if (!n.c || !n.h) return { again: "צָרִיךְ שֶׁתִּשָּׁאֵר עוּגִיָּה מִכָּל סוּג 🙂" };
+  if (n.c !== n.h) return { ok: false, why: "עֲדַיִן לֹא אוֹתוֹ מִסְפָּר", wrong: `${n.c} שוקולד, ${n.h} לב` };
+  if (e.opt && e.grp.done.includes(n.c)) return { again: "זֶה כְּמוֹ בָּאֶפְשָׁרוּת הָרִאשׁוֹנָה. נַסֵּה אַחֶרֶת" };
+  e.grp.done.push(n.c); e.ans = n.c; return { ok: true };
+}
+// After two wrong tries the teacher shows one right answer.
+function mlReveal(e) {
+  if (e.kind === "seq") { e.grp.filled.push(e.ans); return "הַתְּשׁוּבָה הִיא " + e.ans; }
+  if (e.kind === "plate") { const v = e.missing.find(d => !e.grp.found.includes(d)); e.grp.found.push(v); e.ans = v; return `אֵין ${v} עַל הַלּוּחִית`; }
+  const c0 = e.base.filter(t => t === "c").length, h0 = e.base.length - c0;
+  let target = e.mode === "add" ? Math.max(c0, h0) : Math.min(c0, h0);
+  if (e.opt && e.grp.done.includes(target)) target += e.mode === "add" ? 1 : -1;
+  e.ck = e.base.map(t => ({ t }));
+  if (e.mode === "add") { for (let i = c0; i < target; i++) e.ck.push({ t: "c", added: true }); for (let i = h0; i < target; i++) e.ck.push({ t: "h", added: true }); }
+  else for (const t of ["c", "h"]) { let extra = (t === "c" ? c0 : h0) - target; for (let i = e.ck.length - 1; i >= 0 && extra > 0; i--) if (e.ck[i].t === t) { e.ck[i].gone = true; extra--; } }
+  e.grp.done.push(target); e.ans = target;
+  return `כָּךְ: ${target} מִכָּל סוּג`;
+}
+function mathLessonTile(L, kidId) {
+  const runs = runsOf(kidId, L.id), last = runs[runs.length - 1];
+  return `<button class="lsbtn" data-ml="${L.id}"><img src="${LESSON_ICONS["s-homework"] || LESSON_ICONS.math}" alt="">
+    ${last ? `<span class="tick">✓</span>` : `<span class="new">חדש!</span>`}
+    <span class="tag">${L.title}<small>${last ? `${last.firstTry} מתוך ${last.questions} נכון` : L.sub}</small></span></button>`;
+}
+
+function mathScreen(kidId, back, lesson) {
   const kid = state.kids[kidId];
   refresh = null;
-  const round = mathRound(kid.grade || 1);
+  const round = lesson ? lesson.make() : mathRound(kid.grade || 1);
   const run = { date: Date.now(), reads: [], qs: [], kind: "math" };
+  const solvedHtml = e => e.kind ? mlBoard(e, true) : `<span class="ex">${exText(e)} <b>${e.ans}</b></span>`;
   let idx = 0, typed = "", busy = false, rec, t0;
   const hasVid = { good: !!MATH_GOOD && !MATH_GOOD.startsWith("__"), bad: !!MATH_BAD && !MATH_BAD.startsWith("__") };
   app.innerHTML = `<div class="screen stage mathscr"><div class="scene mathscene" data-ar="1.7902" data-safe=".95">
@@ -1341,8 +1448,18 @@ function mathScreen(kidId, back) {
   </div></div>`;
   const sc = $(".mathscene"), disp = $("#disp"), crank = $("#crank");
   $("#back").onclick = back;
+  $("#board").addEventListener("click", ev => {
+    const e = round[idx]; if (!e || e.kind !== "tray" || busy) return;
+    const a = ev.target.closest("[data-add]"), c = ev.target.closest("[data-ck]");
+    if (a) { if (e.ck.length >= 18) return say("אֵין יוֹתֵר מָקוֹם בַּמַּגָּשׁ"); e.ck.forEach(k => k.added && (k.old = true)); e.ck.push({ t: a.dataset.add, added: true }); }
+    else if (c) { const k = e.ck[+c.dataset.ck];
+      if (e.mode === "add") { if (!k.added) return say("אֶת אֵלֶּה לֹא מוֹחֲקִים. רַק מוֹסִיפִים 🙂"); e.ck.splice(+c.dataset.ck, 1); }
+      else k.gone = !k.gone; }
+    else return;
+    beep("key"); board(mlBoard(e, false)); showDisp();
+  });
 
-  const showDisp = cls => { disp.textContent = typed; const an = $("#ans"); if (an) an.textContent = typed || "?"; disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", !!typed && !busy); crank.innerHTML = typed && !busy ? `<span class="arrow">↻</span>` : ""; };
+  const showDisp = cls => { const cur = round[idx] || {}, ready = (cur.kind === "tray" ? trayChanged(cur) : !!typed) && !busy; sc.classList.toggle("tray", cur.kind === "tray"); disp.textContent = typed; const an = $("#ans"); if (an) an.textContent = typed || "?"; disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", ready); crank.innerHTML = ready ? `<span class="arrow">↻</span>` : ""; };
   const board = (html, write) => { $("#board").innerHTML = `<span class="count">${idx + 1} / ${round.length}</span>${html}`; if (write) { const e = $("#board .ex"); e && e.classList.add("write"); } };
   const say = (text, bad) => { sc.querySelectorAll(".mbub").forEach(b => b.remove()); if (!text) return; const b = document.createElement("div"); b.className = "mbub" + (bad ? " bad" : ""); b.textContent = text; sc.appendChild(b); setTimeout(() => b.remove(), 2200); };
   const fx = (cls, txt, x, y, vars) => { const el = document.createElement("div"); el.className = "mfx " + cls; el.textContent = txt; el.style.left = x + "%"; el.style.top = y + "%"; for (const k in vars) el.style.setProperty(k, vars[k]); sc.appendChild(el); setTimeout(() => el.remove(), 1800); };
@@ -1350,15 +1467,16 @@ function mathScreen(kidId, back) {
   function ask() {
     if (idx >= round.length) return finish();
     const e = round[idx];
-    rec = { question: exText(e).replace(" =", ""), attempts: 0, ms: 0, wrong: [], rereads: 0 };
+    rec = { question: e.q || exText(e).replace(" =", ""), attempts: 0, ms: 0, wrong: [], rereads: 0 };
     typed = ""; busy = false; t0 = performance.now();
+    if (e.kind) { if (e.kind === "tray") e.ck = e.base.map(t => ({ t })); board(mlBoard(e, false), true); showDisp(); return; }
     board(`<span class="ex">${exText(e)} <b id="ans">?</b></span><span class="hint">הַקֵּשׁ אֶת כָּל הַמִּסְפָּר, וְאָז סוֹבֵב אֶת הַיָּדִית</span>`, true);
     showDisp();
   }
 
   sc.querySelectorAll(".mkey").forEach(b => b.addEventListener("pointerdown", ev => {
     ev.preventDefault();
-    if (busy) return;
+    if (busy || (round[idx] || {}).kind === "tray") return;
     b.classList.add("down"); setTimeout(() => b.classList.remove("down"), 140);
     const k = b.dataset.k;
     if (k === "C") typed = "";
@@ -1383,24 +1501,28 @@ function mathScreen(kidId, back) {
 
   crank.onclick = () => {
     if (busy) return;
-    if (!typed) { say("קֹדֶם מַקִּישִׁים תְּשׁוּבָה 👆"); sc.classList.remove("shake"); void sc.offsetWidth; sc.classList.add("shake"); return; }
+    const e0 = round[idx];
+    if (e0.kind === "tray" ? !trayChanged(e0) : !typed) { say(e0.kind === "tray" ? (e0.mode === "add" ? "קֹדֶם מוֹסִיפִים עוּגִיּוֹת 👆" : "קֹדֶם מוֹחֲקִים עוּגִיּוֹת 👆") : "קֹדֶם מַקִּישִׁים תְּשׁוּבָה 👆"); sc.classList.remove("shake"); void sc.offsetWidth; sc.classList.add("shake"); return; }
     busy = true; showDisp(); say("");
     const e = round[idx], val = +typed;
+    const verdict = e.kind ? mlCheck(e, typed) : { ok: val === e.ans };
+    if (verdict.again) { busy = false; typed = ""; showDisp(); say(verdict.again); return; }
+    if (e.kind === "seq" && verdict.ok) e.grp.filled.push(e.ans);
     rec.attempts++;
     if (rec.attempts === 1) rec.ms = Math.round(performance.now() - t0);
-    if (val === e.ans) {
+    if (verdict.ok) {
       beep("good"); addCandy(kid, 1, crank);
       const next = () => { $("#drawer").classList.remove("open"); run.qs.push(rec); prizeShow(() => { idx++; ask(); }); };
       showDisp("ok");
       if (hasVid.good) {   // the handle turns, the bell rings and the coins jump out (at about 2s)
-        board(`<span class="ex">${exText(e)} <b>${e.ans}</b></span>`, true);
+        board(solvedHtml(e), true);
         setTimeout(() => { say("כָּל הַכָּבוֹד!"); screenConfetti(); for (let i = 0; i < 16; i++) setTimeout(() => fx("coin", "🪙", 50 + rnd(-8, 8), 82, { "--dx": rnd(-30, 30) + "cqh", "--dy": -rnd(22, 42) + "cqh", "--r": rnd(-300, 300) + "deg" }), i * 60); }, 2000);
         playVid("good", next);
         return;
       }
       const good = () => {
         say("כָּל הַכָּבוֹד!");
-        board(`<span class="ex">${exText(e)} <b>${e.ans}</b></span>`);
+        board(solvedHtml(e));
         $("#drawer").classList.add("open");
         for (let i = 0; i < 9; i++) fx("coin", "🪙", 48 + rnd(-6, 6), 84, { "--dx": rnd(-22, 22) + "cqh", "--dy": -rnd(18, 34) + "cqh", "--r": rnd(-200, 200) + "deg" });
         screenConfetti();
@@ -1409,15 +1531,15 @@ function mathScreen(kidId, back) {
       sc.classList.remove("shake"); void sc.offsetWidth; sc.classList.add("shake");
       setTimeout(good, 450);
     } else {
-      beep("bad"); rec.wrong.push(typed);
+      beep("bad"); rec.wrong.push(verdict.wrong || typed);
       showDisp("no");
       const after = () => {
         sc.classList.remove("bigshake");
         if (rec.attempts >= 2) {   // after two tries the teacher writes the answer and they go on
-          say("הַתְּשׁוּבָה הִיא " + e.ans);
-          board(`<span class="ex">${exText(e)} <b>${e.ans}</b></span>`, true);
+          say(e.kind ? mlReveal(e) : "הַתְּשׁוּבָה הִיא " + e.ans);
+          board(solvedHtml(e), true);
           setTimeout(() => { run.qs.push(rec); idx++; ask(); }, 2600);
-        } else { typed = ""; busy = false; showDisp(); say("נַסֵּה שׁוּב 🙂"); }
+        } else { typed = ""; busy = false; showDisp(); say(verdict.why ? verdict.why + ". נַסֵּה שׁוּב 🙂" : "נַסֵּה שׁוּב 🙂"); }
       };
       if (hasVid.bad) {
         setTimeout(() => say("בּוּם! אוּפְּס...", true), 3600);
@@ -1439,17 +1561,18 @@ function mathScreen(kidId, back) {
   function finish() {
     const firstTry = run.qs.filter(q => q.attempts === 1).length;
     Object.assign(run, { firstTry, questions: run.qs.length });
-    (kid.runs.math = kid.runs.math || []).push(run);
-    if (kid.runs.math.length > 30) kid.runs.math.shift();
+    const rid = lesson ? lesson.id : "math";
+    (kid.runs[rid] = kid.runs[rid] || []).push(run);
+    if (kid.runs[rid].length > 30) kid.runs[rid].shift();
     save();
-    if (remote.db) remote.db.collection("runs").add({ kid: kidId, storyId: "math", title: "מתמטיקה", ...run }).catch(() => {});
+    if (remote.db) remote.db.collection("runs").add({ kid: kidId, storyId: rid, title: lesson ? lesson.title : "מתמטיקה", ...run }).catch(() => {});
     app.innerHTML = `<div class="screen stage"><div class="topbar"><span class="spacer"></span>${candyBar(kid)}</div>
       <div class="center"><div class="note-card"><div class="huge">${firstTry === run.qs.length ? "🏆" : "⭐"}</div>
         <h1>סִיַּמְתָּ!</h1>
-        <p class="muted" style="font-size:22px">${firstTry} מתוך ${run.qs.length} תרגילים נכון בפעם הראשונה</p>
-        <div class="row"><button class="big-btn" id="again">עוֹד סִבּוּב</button>
+        <p class="muted" style="font-size:22px">${firstTry} מתוך ${run.qs.length} ${lesson ? "שְׁאֵלוֹת" : "תרגילים"} נכון בפעם הראשונה</p>
+        <div class="row"><button class="big-btn" id="again">${lesson ? "עוֹד פַּעַם" : "עוֹד סִבּוּב"}</button>
           <button class="icon-btn" id="list">חזרה לשיעורים</button></div></div></div></div>`;
-    $("#again").onclick = () => mathScreen(kidId, back);
+    $("#again").onclick = () => mathScreen(kidId, back, lesson);
     $("#list").onclick = back;
   }
   ask();
@@ -1489,7 +1612,7 @@ function parent() {
   const order = allKidIds().sort((a, b) => (b === state.me) - (a === state.me));
   const kidsBlocks = order.map(id => [id, K(id)]).map(([id, kid]) => {
     const s = kidStats(id), all = allStories(id);
-    const titleOf = sid => sid === "math" ? "מתמטיקה" : (all.find(x => x.id === sid) || {}).title || (remote.runs.find(r => r.storyId === sid) || {}).title || sid;
+    const titleOf = sid => sid === "math" ? "מתמטיקה" : (MATH_LESSONS.find(x => x.id === sid) || all.find(x => x.id === sid) || {}).title || (remote.runs.find(r => r.storyId === sid) || {}).title || sid;
     const rows = s.ids.map(sid => ({ sid, runs: runsOf(id, sid) })).sort((a, b) => b.runs[b.runs.length - 1].date - a.runs[a.runs.length - 1].date).map(({ sid, runs }) => {
       const r = runs[runs.length - 1];
       const total = r.reads.reduce((a, x) => a + x.ms, 0);
