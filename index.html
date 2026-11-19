@@ -494,6 +494,35 @@ body:has(.mathscr) #stagebg { display: none; }
 .mboard .mwp > span small { display: block; font-size: 2.4cqh; color: #3a6ab0; font-family: "Suez One", var(--font-ui); }
 .mboard .mwp > span.w { grid-column: 1 / 3; justify-self: center; border: .3cqh solid #3a7ad8; }
 .mboard .mdot { display: inline-block; width: .8em; height: .8em; border-radius: 50%; background: #9a9a9a; vertical-align: -.05em; box-shadow: inset 0 -.08em .1em #0004; }
+.mboard .ex.mleq.sm { font-size: 6.4cqh; letter-spacing: 0; }
+.mboard .ex.mleq.xs { font-size: 5cqh; letter-spacing: 0; }
+.mboard .mstory { font-size: 4cqh; line-height: 1.3; max-width: 94%; text-align: center; white-space: normal; margin-bottom: 1cqh; text-shadow: none; }
+.mboard .mbig { direction: ltr; unicode-bidi: isolate; font-size: 9cqh; line-height: 1.05; white-space: nowrap; }
+.mboard .mbig b { color: #ffe27a; font-weight: 400; border-bottom: .5cqh solid #ffe27a; }
+.mboard .mbig .q { color: #ffe27a; opacity: .8; }
+.mboard .mang { width: 40cqh; height: 17cqh; }
+.mboard:has(.mopts) .count, .mboard:has(.mcol) .count, .mboard:has(.mord) .count, .mboard:has(.mstory) .count { top: 4%; bottom: auto; }
+.mboard .mopts { pointer-events: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1cqh 2cqh; margin-top: 1.4cqh; }
+.mboard .mopts.three { grid-template-columns: 1fr 1fr 1fr; }
+.mboard .mopts button { font: inherit; font-size: 4.4cqh; line-height: 1.15; min-width: 16cqh; padding: .4cqh 2cqh; border-radius: 2cqh; border: .4cqh solid #f4f1e6aa; background: #ffffff18; color: #f4f1e6; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mboard .mopts.ltr button, .mboard .mord button { direction: ltr; unicode-bidi: isolate; }
+.mboard .mopts button.sel { border-color: #ffe27a; background: #ffe27a33; color: #ffe27a; box-shadow: 0 0 1.4cqh #ffd23a88; }
+.mboard .mopts button.out { opacity: .3; text-decoration: line-through; pointer-events: none; }
+.mboard .mopts button.right { border-color: #a8f7a8; color: #a8f7a8; background: #a8f7a822; }
+.mboard .mopts button.dim { opacity: .3; }
+.mboard .mord { pointer-events: auto; display: flex; gap: 1.2cqh; direction: ltr; min-height: 7.4cqh; align-items: center; }
+.mboard .mord button { font: inherit; font-size: 5cqh; padding: .2cqh 1.6cqh; border-radius: 1.6cqh; border: .4cqh solid #f4f1e6aa; background: #ffffff18; color: #f4f1e6; cursor: pointer; touch-action: manipulation; }
+.mboard .mord.ans { border-bottom: .4cqh dashed #f4f1e666; padding-bottom: .6cqh; margin-top: 1cqh; min-width: 60cqh; justify-content: center; }
+.mboard .mord.ans button { border-color: #ffe27a; color: #ffe27a; }
+.mboard .mord.ans.done button { border-color: #a8f7a8; color: #a8f7a8; }
+.mboard .mord .gap { opacity: .4; font-size: 5cqh; }
+.mboard .mcol { direction: ltr; display: grid; grid-template-columns: repeat(5, 6cqh); font-size: 6.6cqh; line-height: 1.15; text-align: center; }
+.mboard .mcol > i { font-style: normal; position: relative; }
+.mboard .mcol > i sup { position: absolute; top: -1.6cqh; left: 50%; transform: translateX(-50%); font-size: 3.2cqh; color: #8fd0ff; }
+.mboard .mcol > .ln { border-top: .5cqh solid #f4f1e6; margin-top: .4cqh; }
+.mboard .mcol > b { font-weight: 400; color: #ffe27a; }
+.mboard .mcol > b.cur { border-bottom: .5cqh solid #ffe27a; animation: blink 1s steps(1) infinite; }
+.mboard .mcol > b.cur.has { animation: none; }
 .mboard .mcode { font-size: 5cqh; background: #fffaf0; color: #222; border: .3cqh solid #222; padding: 0 1.6cqh; text-shadow: none; direction: ltr; }
 
 @media (prefers-reduced-motion: reduce) { .mfx, .crank.ready, .crank .arrow, .mathscene.shake > *, .mathscene.bigshake > * { animation: none !important; } }
@@ -1364,7 +1393,80 @@ const exText = e => `${e.a} ${e.op} ${e.b} =`;
 
 // Workbook pages dad photographs, made into register lessons. kind: seq = counting backwards with holes,
 // plate = digits 0-9 that are not on a license plate, tray = add / erase cookies until both kinds are equal.
-const MATH_LESSONS = [{
+// Tom's grade 3 worksheet (pages 2-7). Only for Tom: grade 2 and up, never Dean.
+const TOM_MATH = (() => {
+  const forKid = (kidId, kid) => kidId === "big" || (kidId !== "small" && (kid.grade || 1) >= 2);
+  const shuf = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const M = s => s.replace(/\*/g, "×").replace(/\//g, "÷").replace(/ - /g, " − ");
+  const eq = (items, title, text, ans, more = {}) => { const t = M(text); items.push({ kind: "eq", title, pic: "", text: t, ans, cls: t.length > 20 ? "xs" : t.length > 12 ? "sm" : "", q: (more.story ? more.story + " " : "") + t.replace("_", "?"), ...more }); };
+  // pick: opts[0] is the right one; shuffled every round. ltr = numbers / exercises.
+  const pick = (items, title, opts, more = {}) => { const o = shuf(opts.map(String)); items.push({ kind: "pick", title, opts: o.map(M), ans: o.indexOf(String(opts[0])), q: more.q || title, ...more }); };
+  const seq = (items, start) => {
+    const step = start[1] - start[0], all = [...start]; for (let i = 0; i < 3; i++) all.push(all[all.length - 1] + step);
+    for (let k = 0; k < 3; k++) { const shown = all.map((n, i) => i < 3 + k ? n : i === 3 + k ? "_" : "□"); eq(items, "הַשְׁלִימוּ אֶת הַסִּדְרָה", shown.join(", "), all[3 + k], { q: `סדרה ${start.join(", ")}: המספר ה-${4 + k}` }); }
+  };
+  const place = (items, num, digit) => {
+    const s = String(num), at = s.indexOf(String(digit)), val = digit * 10 ** (s.length - 1 - at);
+    const wrong = [digit, digit * 10, digit * 100].filter(v => v !== val);
+    pick(items, "מָה הָעֵרֶךְ שֶׁל הַסִּפְרָה הַמְּסֻמֶּנֶת?", [val, ...wrong, num], { ltr: true, pic: `<span class="mbig">${s.slice(0, at)}<b>${digit}</b>${s.slice(at + 1)}</span>`, q: `במספר ${num}, ערך הספרה ${digit}` });
+  };
+  const col = (items, a, op, b) => items.push({ kind: "col", a, op, b, ans: op === "+" ? a + b : a - b, q: `${a} ${op} ${b} במאונך` });
+  const order = (items, nums, up) => items.push({ kind: "order", nums, up, q: (up ? "מהקטן לגדול: " : "מהגדול לקטן: ") + nums.join(", ") });
+  const ang = deg => {
+    const r = 70, a = deg * Math.PI / 180, vx = deg > 150 ? 100 : deg > 95 ? 120 : 50, vy = deg > 150 ? 70 : 85;
+    const bx = deg > 150 ? 100 + r * 1.2 : Math.min(190, vx + r * 1.4), ox = vx + r * Math.cos(a) * (deg > 150 ? 1.2 : 1), oy = vy - r * Math.sin(a) * (deg > 150 ? 1.2 : 1);
+    return `<svg class="mang" viewBox="0 0 200 90"><polyline points="${ox.toFixed(1)},${oy.toFixed(1)} ${vx},${vy} ${bx.toFixed(1)},${vy}" fill="none" stroke="#f4f1e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${vx}" cy="${vy}" r="3.5" fill="#ffe27a"/></svg>`;
+  };
+  const ANG = { 90: "יְשָׁרָה", 40: "חַדָּה", 75: "חַדָּה", 55: "חַדָּה", 135: "קֵהָה", 112: "קֵהָה", 180: "שְׁטוּחָה" };
+  const angle = (items, deg) => { const right = ANG[deg]; pick(items, "אֵיזוֹ זָוִית זֹאת?", [right, ...["יְשָׁרָה", "חַדָּה", "קֵהָה", "שְׁטוּחָה"].filter(x => x !== right)], { pic: ang(deg), q: `זווית של ${deg} מעלות` }); };
+  const OOP = "קֹדֶם סוֹגְרַיִם, אַחַר כָּךְ כֶּפֶל וְחִלּוּק, וּבַסּוֹף חִבּוּר וְחִסּוּר";
+  const word = (items, story, exs, ans) => {
+    pick(items, "אֵיזֶה תַּרְגִּיל מַתְאִים לַשְּׁאֵלָה?", exs, { ltr: true, story, q: story + " (בחירת תרגיל)" });
+    eq(items, "עַכְשָׁו פִּתְרוּ", exs[0] + " = _", ans, { story });
+  };
+  const cmp = (items, l, r, v) => pick(items, "אֵיזֶה סִימָן מַתְאִים?", [v, ...[">", "<", "="].filter(x => x !== v)], { ltr: true, three: true, pic: `<span class="mbig">${M(l)} <span class="q">?</span> ${M(r)}</span>`, q: `${M(l)} ? ${M(r)}` });
+  const L = (id, title, sub, make) => ({ id, title, sub, forKid, make() { const it = []; make(it); return it; } });
+  return [
+    L("tom-p2", "סדרות וערך הספרה", "דף 2", it => {
+      [[120, 130, 140], [905, 895, 885], [245, 250, 255], [600, 500, 400]].forEach(s => seq(it, s));
+      order(it, [708, 780, 87, 807, 870], true);
+      order(it, [342, 324, 423, 432, 234], false);
+      place(it, 385, 8); place(it, 647, 7); place(it, 902, 9);
+    }),
+    L("tom-p3", "חיבור וחיסור במאונך", "דף 3", it => {
+      [[248, "+", 135], [507, "+", 286], [364, "+", 225], [729, "+", 168], [653, "-", 241], [802, "-", 376], [940, "-", 485], [701, "-", 259]].forEach(([a, op, b]) => col(it, a, op, b));
+    }),
+    L("tom-p4", "כפל, חילוק וסדר פעולות", "דף 4", it => {
+      [["7 * 8", 56], ["6 * 9", 54], ["42 / 7", 6], ["56 / 8", 7], ["9 * 4", 36], ["36 / 6", 6], ["5 * 7", 35], ["63 / 9", 7]].forEach(([t, a]) => eq(it, "פִּתְרוּ", t + " = _", a));
+      [["6 + 4 * 5", 26], ["36 / 6 + 8", 14], ["(12 + 8) / 4", 5], ["30 - 3 * 7", 9], ["7 * (9 - 5)", 28], ["48 / 8 * 2", 12]].forEach(([t, a]) => eq(it, "חַשְּׁבוּ לְפִי סֵדֶר פְּעֻלּוֹת הַחֶשְׁבּוֹן", t + " = _", a, { hint: OOP }));
+      cmp(it, "6 * 7", "40", ">"); cmp(it, "54 / 9", "3 * 2", "="); cmp(it, "8 * 4", "30", ">"); cmp(it, "45 / 5", "3 * 4", "<");
+    }),
+    L("tom-p5", "שאלות מילוליות", "דף 5", it => {
+      word(it, "בספרייה היו 542 ספרים. נוספו 871 ספרים. כמה ספרים יש עכשיו?", ["542 + 871", "871 - 542", "542 + 542", "871 + 871"], 1413);
+      word(it, "בבית הספר 620 תלמידים. 572 יצאו לטיול. כמה תלמידים נשארו?", ["620 - 572", "620 + 572", "572 - 62", "620 - 62"], 48);
+      word(it, "בכל קופסה יש 8 עפרונות. כמה עפרונות יש ב-7 קופסאות?", ["8 * 7", "8 + 7", "8 * 8", "7 + 7"], 56);
+      word(it, "המורה חילקה 84 מדבקות שווה בשווה ל-6 ילדים. כמה קיבל כל ילד?", ["84 / 6", "84 * 6", "84 - 6", "84 + 6"], 14);
+    }),
+    L("tom-p6", "זוויות", "דף 6", it => {
+      [135, 40, 90, 90, 112, 75, 180].forEach(d => angle(it, d));
+      pick(it, "הַשְׁלִימוּ", ["חַדָּה", "קֵהָה", "יְשָׁרָה", "שְׁטוּחָה"], { story: "זווית קטנה מזווית ישרה נקראת:", q: "זווית קטנה מזווית ישרה נקראת" });
+      pick(it, "הַשְׁלִימוּ", ["קֵהָה", "חַדָּה", "יְשָׁרָה", "שְׁטוּחָה"], { story: "זווית גדולה מזווית ישרה וקטנה מזווית שטוחה נקראת:", q: "זווית גדולה מישרה וקטנה משטוחה נקראת" });
+    }),
+    L("tom-p7", "מבחן מסכם", "דף 7", it => {
+      pick(it, "אֵיךְ כּוֹתְבִים אֶת הַמִּסְפָּר בְּמִלִּים?", ["חמש מאות ושש", "חמש מאות ושישים", "חמישים ושש", "שש מאות וחמש"], { pic: `<span class="mbig">506</span>`, q: "506 במילים" });
+      eq(it, "מָה הַמִּסְפָּר שֶׁבָּא לִפְנֵי 600?", "_ , 600 , □", 599);
+      eq(it, "מָה הַמִּסְפָּר שֶׁבָּא אַחֲרֵי 600?", "599 , 600 , _", 601);
+      eq(it, "הַמְשִׁיכוּ אֶת הַסִּדְרָה", "315, 325, 335, _, □", 345);
+      eq(it, "הַמְשִׁיכוּ אֶת הַסִּדְרָה", "315, 325, 335, 345, _", 355);
+      place(it, 248, 4);
+      col(it, 476, "+", 258); col(it, 903, "-", 467);
+      eq(it, "פִּתְרוּ", "8 * 7 = _", 56); eq(it, "פִּתְרוּ", "45 / 5 = _", 9);
+      eq(it, "פִּתְרוּ לְפִי סֵדֶר פְּעֻלּוֹת", "24 - 3 * 6 = _", 6, { hint: OOP });
+      word(it, "בכל אחת מ-6 שקיות יש 9 סוכריות. כמה סוכריות יש בסך הכול?", ["6 * 9", "6 + 9", "9 - 6", "9 + 9"], 54);
+    }),
+  ];
+})();
+const MATH_LESSONS = [...TOM_MATH, {
   id: "math-p112", title: "חִבּוּר עַד 10", sub: "חוֹבֶרֶת חֶשְׁבּוֹן",
   forKid: (kidId, kid) => kidId === "small" || (kid.grade || 1) <= 1,
   make() {
@@ -1412,11 +1514,40 @@ const MATH_LESSONS = [{
     return items;
   },
 }];
+// Result row of a column exercise: typed digits go from the units (right) to the left.
+function colCells(e, typed) {
+  const W = 5, n = Math.max(String(e.ans).length, typed.length), out = [];
+  for (let i = 0; i < W; i++) {
+    const k = W - 1 - i;   // k = 0 is the units column
+    if (k >= n && k >= typed.length) { out.push("<b></b>"); continue; }
+    const d = typed[k];
+    out.push(`<b class="${k === typed.length ? "cur" : ""}">${d !== undefined ? d : k === typed.length ? "?" : ""}</b>`);
+  }
+  return out.join("");
+}
+const revDigits = t => [...t].reverse().join("");
 const trayCount = e => { const n = { c: 0, h: 0 }; e.ck.forEach(k => { if (!k.gone) n[k.t]++; }); return n; };
 const trayChanged = e => e.ck.some(k => k.added || k.gone);
 function mlBoard(e, solved) {
-  if (e.kind === "eq") return `<span class="mtitle">${e.title}</span>${e.pic ? `<div class="mpic">${e.pic}</div>` : ""}
-    <span class="ex mleq">${e.text.replace("_", solved ? `<b>${e.ans}</b>` : `<b id="ans">?</b>`)}</span>${e.hint && !solved ? `<span class="hint ml">${e.hint}</span>` : ""}`;
+  if (e.kind === "pick") return `<span class="mtitle">${e.title}</span>${e.story ? `<span class="mstory">${e.story}</span>` : ""}${e.pic ? `<div class="mpic">${e.pic}</div>` : ""}
+    <div class="mopts${e.ltr ? " ltr" : ""}${e.three ? " three" : ""}">${e.opts.map((o, i) => `<button data-op="${i}" class="${solved ? (i === e.ans ? "right" : "dim") : (i === e.sel ? "sel" : "") + (e.out.includes(i) ? " out" : "")}">${o}</button>`).join("")}</div>`;
+  if (e.kind === "order") {
+    const sorted = [...e.nums].sort((a, b) => e.up ? a - b : b - a), placed = solved ? sorted.map(n => e.nums.indexOf(n)) : e.placed;
+    const pool = e.nums.map((n, i) => placed.includes(i) ? "" : `<button data-op="${i}">${n}</button>`).join("");
+    const row = placed.map(i => `<button data-op="${i}">${e.nums[i]}</button>`).join("") + `<span class="gap">${"_ ".repeat(e.nums.length - placed.length)}</span>`;
+    return `<span class="mtitle">${e.up ? "סַדְּרוּ מֵהַקָּטָן לַגָּדוֹל" : "סַדְּרוּ מֵהַגָּדוֹל לַקָּטָן"}</span><div class="mord">${pool}</div><div class="mord ans${solved ? " done" : ""}">${row}</div>
+      ${solved ? "" : `<span class="hint ml">לוֹחֲצִים עַל הַמִּסְפָּרִים לְפִי הַסֵּדֶר</span>`}`;
+  }
+  if (e.kind === "col") {
+    const W = 5, pad = (v, sign) => { const d = String(v).split(""); return [...Array(W - 1 - d.length).fill(""), ...d].map((c, i) => i === 0 && sign ? sign : c); };
+    const top = pad(e.a, ""), bot = pad(e.b, e.op === "-" ? "−" : "+"), carry = Array(W).fill("");
+    if (solved && e.op === "+") { let c = 0; const A = String(e.a).split("").reverse(), B = String(e.b).split("").reverse(); for (let k = 0; k < A.length; k++) { c = (+A[k] + +(B[k] || 0) + c) >= 10 ? 1 : 0; if (c) carry[W - 2 - k] = "1"; } }
+    const cells = (r, extra) => ["", ...r].slice(-W).map((c, i) => `<i>${c}${extra && extra[i] ? `<sup>${extra[i]}</sup>` : ""}</i>`).join("");
+    return `<span class="mtitle">פִּתְרוּ בִּמְאֻנָּךְ</span><div class="mcol">${cells(top.slice(-(W - 1)), carry.slice(-W))}${cells(bot.slice(-(W - 1)))}${Array(W).fill(`<i class="ln"></i>`).join("")}<span id="colres" style="display:contents">${colCells(e, solved ? [...String(e.ans)].reverse().join("") : "")}</span></div>
+      ${solved ? "" : `<span class="hint ml">${e.op === "+" ? "מַתְחִילִים מֵהָאֲחָדוֹת, מִיָּמִין. לֹא לִשְׁכֹּחַ לְהַעֲבִיר" : "מַתְחִילִים מֵהָאֲחָדוֹת, מִיָּמִין. צָרִיךְ לִפְרֹט?"}</span>`}`;
+  }
+  if (e.kind === "eq") return `<span class="mtitle">${e.title}</span>${e.story ? `<span class="mstory">${e.story}</span>` : ""}${e.pic ? `<div class="mpic">${e.pic}</div>` : ""}
+    <span class="ex mleq ${e.cls || ""}">${e.text.replace("_", solved ? `<b>${e.ans}</b>` : `<b id="ans">?</b>`)}</span>${e.hint && !solved ? `<span class="hint ml">${e.hint}</span>` : ""}`;
   if (e.kind === "seq") {
     const cells = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0].map(n => {
       const hole = e.holes.includes(n), shown = !hole || e.grp.filled.includes(n);
@@ -1441,6 +1572,9 @@ function mlBoard(e, solved) {
 }
 // The kid's answer for a lesson item: {ok, why} counts as a try; {again} just asks again without counting.
 function mlCheck(e, typed) {
+  if (e.kind === "pick") { const i = +typed - 1; if (i === e.ans) return { ok: true }; e.out.push(i); return { ok: false, wrong: e.opts[i].replace(/<[^>]+>/g, "") }; }
+  if (e.kind === "order") { const got = e.placed.map(i => e.nums[i]), ok = got.every((n, k) => k === 0 || (e.up ? got[k - 1] < n : got[k - 1] > n)); return ok ? { ok: true } : { ok: false, why: "הַסֵּדֶר לֹא נָכוֹן", wrong: got.join(", ") }; }
+  if (e.kind === "col") return +revDigits(typed) === e.ans ? { ok: true } : { ok: false, wrong: revDigits(typed) };
   if (e.kind === "eq") return { ok: +typed === e.ans };
   if (e.kind === "seq") return { ok: +typed === e.ans };
   if (e.kind === "plate") {
@@ -1458,6 +1592,9 @@ function mlCheck(e, typed) {
 }
 // After two wrong tries the teacher shows one right answer.
 function mlReveal(e) {
+  if (e.kind === "pick") return "הַתְּשׁוּבָה: " + e.opts[e.ans].replace(/<[^>]+>/g, "");
+  if (e.kind === "order") return "כָּךְ מְסַדְּרִים";
+  if (e.kind === "col") return "הַתְּשׁוּבָה הִיא " + e.ans;
   if (e.kind === "eq") return "הַתְּשׁוּבָה הִיא " + e.ans;
   if (e.kind === "seq") { e.grp.filled.push(e.ans); return "הַתְּשׁוּבָה הִיא " + e.ans; }
   if (e.kind === "plate") { const v = e.missing.find(d => !e.grp.found.includes(d)); e.grp.found.push(v); e.ans = v; return `אֵין ${v} עַל הַלּוּחִית`; }
@@ -1500,6 +1637,14 @@ function mathScreen(kidId, back, lesson) {
   const sc = $(".mathscene"), disp = $("#disp"), crank = $("#crank");
   $("#back").onclick = back;
   $("#board").addEventListener("click", ev => {
+    const e1 = round[idx];
+    if (e1 && (e1.kind === "pick" || e1.kind === "order") && !busy) {
+      const o = ev.target.closest("[data-op]"); if (!o) return;
+      const i = +o.dataset.op;
+      if (e1.kind === "pick") { if (e1.out.includes(i)) return; e1.sel = i; typed = String(i + 1); }
+      else { const p = e1.placed.indexOf(i); if (p >= 0) e1.placed.splice(p, 1); else e1.placed.push(i); typed = e1.placed.length === e1.nums.length ? "x" : ""; }
+      beep("key"); board(mlBoard(e1, false)); showDisp(); return;
+    }
     const e = round[idx]; if (!e || e.kind !== "tray" || busy) return;
     const a = ev.target.closest("[data-add]"), c = ev.target.closest("[data-ck]");
     if (a) { if (e.ck.length >= 18) return say("אֵין יוֹתֵר מָקוֹם בַּמַּגָּשׁ"); e.ck.forEach(k => k.added && (k.old = true)); e.ck.push({ t: a.dataset.add, added: true }); }
@@ -1510,7 +1655,7 @@ function mathScreen(kidId, back, lesson) {
     beep("key"); board(mlBoard(e, false)); showDisp();
   });
 
-  const showDisp = cls => { const cur = round[idx] || {}, ready = (cur.kind === "tray" ? trayChanged(cur) : !!typed) && !busy; sc.classList.toggle("tray", cur.kind === "tray"); disp.textContent = typed; const an = $("#ans"); if (an) an.textContent = typed || "?"; disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", ready); crank.innerHTML = ready ? `<span class="arrow">↻</span>` : ""; };
+  const showDisp = cls => { const cur = round[idx] || {}, ready = (cur.kind === "tray" ? trayChanged(cur) : !!typed) && !busy; sc.classList.toggle("tray", ["tray", "pick", "order"].includes(cur.kind)); disp.textContent = cur.kind === "col" ? revDigits(typed) : typed; const an = $("#ans"); if (an) an.textContent = typed || "?"; const cr = $("#colres"); if (cr && cur.kind === "col") cr.innerHTML = colCells(cur, typed); disp.className = "mdisp " + (typed ? "" : "empty ") + (cls || ""); crank.classList.toggle("ready", ready); crank.innerHTML = ready ? `<span class="arrow">↻</span>` : ""; };
   const board = (html, write) => { $("#board").innerHTML = `<span class="count">${idx + 1} / ${round.length}</span>${html}`; if (write) { const e = $("#board .ex"); e && e.classList.add("write"); } };
   const say = (text, bad) => { sc.querySelectorAll(".mbub").forEach(b => b.remove()); if (!text) return; const b = document.createElement("div"); b.className = "mbub" + (bad ? " bad" : ""); b.textContent = text; sc.appendChild(b); setTimeout(() => b.remove(), 2200); };
   const fx = (cls, txt, x, y, vars) => { const el = document.createElement("div"); el.className = "mfx " + cls; el.textContent = txt; el.style.left = x + "%"; el.style.top = y + "%"; for (const k in vars) el.style.setProperty(k, vars[k]); sc.appendChild(el); setTimeout(() => el.remove(), 1800); };
@@ -1520,19 +1665,19 @@ function mathScreen(kidId, back, lesson) {
     const e = round[idx];
     rec = { question: e.q || exText(e).replace(" =", ""), attempts: 0, ms: 0, wrong: [], rereads: 0 };
     typed = ""; busy = false; t0 = performance.now();
-    if (e.kind) { if (e.kind === "tray") e.ck = e.base.map(t => ({ t })); board(mlBoard(e, false), true); showDisp(); return; }
+    if (e.kind) { if (e.kind === "tray") e.ck = e.base.map(t => ({ t })); if (e.kind === "pick") { e.sel = null; e.out = []; } if (e.kind === "order") e.placed = []; board(mlBoard(e, false), true); showDisp(); return; }
     board(`<span class="ex">${exText(e)} <b id="ans">?</b></span><span class="hint">הַקֵּשׁ אֶת כָּל הַמִּסְפָּר, וְאָז סוֹבֵב אֶת הַיָּדִית</span>`, true);
     showDisp();
   }
 
   sc.querySelectorAll(".mkey").forEach(b => b.addEventListener("pointerdown", ev => {
     ev.preventDefault();
-    if (busy || (round[idx] || {}).kind === "tray") return;
+    if (busy || ["tray", "pick", "order"].includes((round[idx] || {}).kind)) return;
     b.classList.add("down"); setTimeout(() => b.classList.remove("down"), 140);
     const k = b.dataset.k;
     if (k === "C") typed = "";
     else if (k === "⌫") typed = typed.slice(0, -1);
-    else if (typed.length < 5) typed = typed === "0" ? k : typed + k;
+    else if (typed.length < 5) typed = typed === "0" && (round[idx] || {}).kind !== "col" ? k : typed + k;
     beep("key"); showDisp();
   }));
 
@@ -1553,7 +1698,7 @@ function mathScreen(kidId, back, lesson) {
   crank.onclick = () => {
     if (busy) return;
     const e0 = round[idx];
-    if (e0.kind === "tray" ? !trayChanged(e0) : !typed) { say(e0.kind === "tray" ? (e0.mode === "add" ? "קֹדֶם מוֹסִיפִים עוּגִיּוֹת 👆" : "קֹדֶם מוֹחֲקִים עוּגִיּוֹת 👆") : "קֹדֶם מַקִּישִׁים תְּשׁוּבָה 👆"); sc.classList.remove("shake"); void sc.offsetWidth; sc.classList.add("shake"); return; }
+    if (e0.kind === "tray" ? !trayChanged(e0) : !typed) { say(e0.kind === "tray" ? (e0.mode === "add" ? "קֹדֶם מוֹסִיפִים עוּגִיּוֹת 👆" : "קֹדֶם מוֹחֲקִים עוּגִיּוֹת 👆") : e0.kind === "pick" ? "קֹדֶם בּוֹחֲרִים תְּשׁוּבָה 👆" : e0.kind === "order" ? "קֹדֶם מְסַדְּרִים אֶת כָּל הַמִּסְפָּרִים 👆" : "קֹדֶם מַקִּישִׁים תְּשׁוּבָה 👆"); sc.classList.remove("shake"); void sc.offsetWidth; sc.classList.add("shake"); return; }
     busy = true; showDisp(); say("");
     const e = round[idx], val = +typed;
     const verdict = e.kind ? mlCheck(e, typed) : { ok: val === e.ans };
@@ -1590,7 +1735,7 @@ function mathScreen(kidId, back, lesson) {
           say(e.kind ? mlReveal(e) : "הַתְּשׁוּבָה הִיא " + e.ans);
           board(solvedHtml(e), true);
           setTimeout(() => { run.qs.push(rec); idx++; ask(); }, 2600);
-        } else { typed = ""; busy = false; showDisp(); say(verdict.why ? verdict.why + ". נַסֵּה שׁוּב 🙂" : "נַסֵּה שׁוּב 🙂"); }
+        } else { typed = ""; busy = false; if (e.kind === "order") e.placed = []; if (e.kind === "pick" || e.kind === "order") { e.sel = null; board(mlBoard(e, false)); } showDisp(); say(verdict.why ? verdict.why + ". נַסֵּה שׁוּב 🙂" : "נַסֵּה שׁוּב 🙂"); }
       };
       if (hasVid.bad) {
         setTimeout(() => say("בּוּם! אוּפְּס...", true), 3600);
